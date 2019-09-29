@@ -1,0 +1,81 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+
+body {
+    background: url("../images/background.gif");
+    margin: 0 auto;
+}
+
+span.td {
+    display: inline-block;
+}
+
+div.label {
+    font-size: 14px;
+    padding: 2px;
+}
+
+select {
+    font-size: 14px;
+    width: 108px;
+    padding: 2px;
+}
+
+option {
+    font-size: 14px;
+}
+
+input.button {
+    font-size: 14px;
+    width: 108px;
+}
+
+label {
+    font-size: 14px;
+}
+
+#game_title {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    height: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+    font-family: ºÚÌå;
+}
+
+.game_space {
+    height: 20px;
+}
+
+.top_space {
+    padding-top: 2px
+}
+
+#game_zone {
+    margin: 0 auto;
+    text-align: center;
+    white-space: nowrap;
+    float: left;
+}
+
+#game_board {
+    margin-left: 300px;
+    margin-right: 10px;
+    float: left;
+}
+
+#game_menu {
+    vertical-align: top;
+    width: 120px;
+    float: left;
+    text-align: left
+}
+
+#selMoveList {
+    width: 100px;
+    font-family: "ËÎÌå";
+}
