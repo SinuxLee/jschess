@@ -1,4 +1,22 @@
+/**
+ * 数据定义:
+ * 1.棋子: 黑、红、空
+ * 2.棋子估值
+ * 3.棋子走位表
+ * 4.位置:棋盘坐标系、点、线、悔棋
+ * 5.棋盘
+ * 6.玩家(player)
+ * 7.房间
+ * 8.录像
+ * 9.走棋规则
+ * 10.ai
+ * 11.开局库
+ * 12.玩法类型定义(常规、揭棋、翻翻棋)
+ * 13.游戏模式定义(金币、比赛、elo棋力评测、残局闯关、人机、好友房、排位赛、观战、教学、推演工具)
+ */
+
 "use strict";
+
 var STARTUP_FEN = [
     "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w",
     "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKAB1R w",
@@ -35,6 +53,18 @@ board.onAddMove = function() {
     }
     selMoveList.scrollTop = selMoveList.scrollHeight;
 };
+
+class Game {
+    constructor() {
+
+    }
+
+    Run() {
+
+    }
+}
+
+var gameInstance = new Game();
 
 function level_change() {
     board.millis = Math.pow(10, selLevel.selectedIndex + 1);

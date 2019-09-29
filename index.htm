@@ -1,5 +1,4 @@
-<!-- DOCTYPE html -->
-<html>
+<!DOCTYPE html>
 
 <head>
     <title>象棋小巫师</title>
@@ -23,7 +22,7 @@
                     <option selected value="0">我先走</option>
                     <option value="1">电脑先走</option>
                     <option value="2">不用电脑</option>
-                </select></div>
+            </select></div>
 
             <div class="label">先走让子</div>
             <div><select id="selHandicap">
@@ -31,7 +30,7 @@
                     <option value="1">让左马</option>
                     <option value="2">让双马</option>
                     <option value="3">让九子</option>
-                </select></div>
+            </select></div>
 
             <div class="top_space">
                 <input type="button" class="button" value="重新开始" onclick="restart_click()">
@@ -47,19 +46,25 @@
                   <option selected value="0">入门</option>
                   <option value="1">业余</option>
                   <option value="2">专业</option>
-                </select></div>
+            </select></div>
 
             <div class="game_space"></div>
 
-            <div><input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="board.animated = checked" /><label for="chkAnimated">动画</label></div>
-            <div><input type="checkbox" class="checkbox" checked onclick="board.setSound(checked)" /><label for="chkSound">音效</label></div>
+            <div>
+                <input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="board.animated = checked" />
+                <label for="chkAnimated">动画</label>
+            </div>
+            <div>
+                <input type="checkbox" class="checkbox" checked onclick="board.setSound(checked)" />
+                <label for="chkSound">音效</label>
+            </div>
 
             <div class="game_space"></div>
 
             <div class="label">步骤</div>
             <div><select id="selMoveList" size="10" onchange="moveList_change()">
                   <option selected value="0">=== 开始 ===</option>
-                </select></div>
+            </select></div>
         </div>
     </div>
 
@@ -69,6 +74,7 @@
     <script type="text/javascript" src="board.js"></script>
     <script type="text/javascript" src="cchess.js"></script>
     <script type="text/javascript" src="game.js"></script>
+
 </body>
 
-</html
+</html>

@@ -90,10 +90,10 @@ function Board(container, images, sounds) {
         var img = document.createElement("img");
         var style = img.style;
         style.position = "absolute";
-        style.left = SQ_X(sq);
-        style.top = SQ_Y(sq);
-        style.width = SQUARE_SIZE;
-        style.height = SQUARE_SIZE;
+        style.left = SQ_X(sq) + "px";
+        style.top = SQ_Y(sq) + "px";
+        style.width = SQUARE_SIZE + "px";
+        style.height = SQUARE_SIZE + "px";
         style.zIndex = 0;
         img.onmousedown = function(sq_) {
             return function() {

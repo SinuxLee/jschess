@@ -1,0 +1,16 @@
+{
+    "esversion": 6,
+    "sub": true,
+    "laxbreak": true,
+    "regexp": true,
+    "asi": true,
+    "bitwise": true,
+    "curly": true,
+    "immed": true,
+    "eqeqeq": true,
+    "eqnull": true,
+    "newcap": true,
+    "noarg": true,
+    "undef": true,
+    "strict": true
+}
