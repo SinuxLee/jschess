@@ -22,7 +22,7 @@
                     <option selected value="0">我先走</option>
                     <option value="1">电脑先走</option>
                     <option value="2">不用电脑</option>
-            </select></div>
+                </select></div>
 
             <div class="label">先走让子</div>
             <div><select id="selHandicap">
@@ -30,7 +30,7 @@
                     <option value="1">让左马</option>
                     <option value="2">让双马</option>
                     <option value="3">让九子</option>
-            </select></div>
+                </select></div>
 
             <div class="top_space">
                 <input type="button" class="button" value="重新开始" onclick="restart_click()">
@@ -43,10 +43,10 @@
 
             <div class="label">电脑水平</div>
             <div><select id="selLevel" size="3" onchange="level_change()">
-                  <option selected value="0">入门</option>
-                  <option value="1">业余</option>
-                  <option value="2">专业</option>
-            </select></div>
+                    <option selected value="0">入门</option>
+                    <option value="1">业余</option>
+                    <option value="2">专业</option>
+                </select></div>
 
             <div class="game_space"></div>
 
@@ -63,12 +63,16 @@
 
             <div class="label">步骤</div>
             <div><select id="selMoveList" size="10" onchange="moveList_change()">
-                  <option selected value="0">=== 开始 ===</option>
-            </select></div>
+                    <option selected value="0">=== 开始 ===</option>
+                </select></div>
         </div>
     </div>
 
+    <script type="text/javascript" src="util.js"></script>
+    <script type="text/javascript" src="constant.js"></script>
     <script type="text/javascript" src="book.js"></script>
+    <script type="text/javascript" src="audio.js"></script>
+    <script type="text/javascript" src="ui.js"></script>
     <script type="text/javascript" src="position.js"></script>
     <script type="text/javascript" src="search.js"></script>
     <script type="text/javascript" src="board.js"></script>

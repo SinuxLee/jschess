@@ -252,9 +252,9 @@ function test() {
     for (var i = 0; i < PUZZLE_LIST.length; i++) {
         pos.fromFen(PUZZLE_LIST[i]);
         for (var sqSrc = 0; sqSrc < 256; sqSrc++) {
-            if (IN_BOARD(sqSrc)) {
+            if (isChessOnBoard(sqSrc)) {
                 for (var sqDst = 0; sqDst < 256; sqDst++) {
-                    if (IN_BOARD(sqDst)) {
+                    if (isChessOnBoard(sqDst)) {
                         legal += (pos.legalMove(MOVE(sqSrc, sqDst)) ? 1 : 0);
                     }
                 }
