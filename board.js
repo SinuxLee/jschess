@@ -28,24 +28,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 class Board {
     constructor(game, container, images, sounds) {
+        this.game_ = game;
         this.images = images;
         this.sounds = sounds;
 
         this.pos = new Position();
         this.pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1");
 
-        this.animated = true;
-        this.sound = true;
         this.search = null;
         this.imgSquares = [];
-
-        this.sqSelected = 0;
-        this.mvLast = 0;
-        this.millis = 0;
-        this.computer = -1;
-        this.result = RESULT_INIT;
-        this.busy = false;
-
+        this.sqSelected = 0; //被选中的棋子
+        this.lastMotion = 0; //最后一步棋
+        this.millis = 0; //思考的时间
+        this.computer = -1; //机器人开关, -1 - 不用机器, 0 - 机器人红方, 1 - 机器人黑方
+        this.result = RESULT_INIT; //对局结果
+        this.busy = false; //是否思考中
 
         let this_ = this;
         for (let sq = 0; sq < 256; sq++) {
@@ -71,32 +68,7 @@ class Board {
             this.imgSquares.push(img);
         }
 
-        this.thinking = document.createElement("img");
-        this.thinking.src = images + "thinking.gif";
-        let style = this.thinking.style;
-        style.visibility = "hidden";
-        style.position = "absolute";
-        style.left = UI_THINKING_POS_LEFT + "px";
-        style.top = UI_THINKING_POS_TOP + "px";
-        container.appendChild(this.thinking);
-
-        this.dummy = document.createElement("div");
-        this.dummy.style.position = "absolute";
-        container.appendChild(this.dummy);
-
         this.flushBoard();
-    }
-
-    playSound(soundFile) {
-        if (!this.sound) {
-            return;
-        }
-        try {
-            new Audio(this.sounds + soundFile + ".wav").play();
-        } catch (e) {
-            this.dummy.innerHTML = "<embed src=\"" + this.sounds + soundFile +
-                ".wav\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
-        }
     }
 
     setSearch(hashLevel) {
@@ -104,7 +76,7 @@ class Board {
     }
 
     flipped(sq) {
-        return this.computer == 0 ? SQUARE_FLIP(sq) : sq;
+        return this.computer == 0 ? flipPos(sq) : sq;
     }
 
     computerMove() {
@@ -120,26 +92,27 @@ class Board {
             return;
         }
         if (!this.pos.makeMove(mv)) {
-            this.playSound("illegal");
+            this.game_.onIllegalMove();
             return;
         }
         this.busy = true;
-        if (!this.animated) {
+        if (!this.game_.getAnimated()) {
             this.postAddMove(mv, computerMove);
             return;
         }
 
-        var sqSrc = this.flipped(SRC(mv));
-        var xSrc = SQ_X(sqSrc);
-        var ySrc = SQ_Y(sqSrc);
-        var sqDst = this.flipped(DST(mv));
-        var xDst = SQ_X(sqDst);
-        var yDst = SQ_Y(sqDst);
-        var style = this.imgSquares[sqSrc].style;
+        let posSrc = this.flipped(getSrcPosFromMotion(mv));
+        let xSrc = SQ_X(posSrc);
+        let ySrc = SQ_Y(posSrc);
+        let posDst = this.flipped(getDstPosFromMotion(mv));
+        let xDst = SQ_X(posDst);
+        let yDst = SQ_Y(posDst);
+
+        let style = this.imgSquares[posSrc].style;
         style.zIndex = 256;
-        var step = MAX_STEP - 1;
-        var this_ = this;
-        var timer = setInterval(function () {
+        let step = MAX_STEP - 1;
+        let this_ = this;
+        let timer = setInterval(function () {
             if (step == 0) {
                 clearInterval(timer);
                 style.left = xSrc + "px";
@@ -155,39 +128,44 @@ class Board {
     }
 
     postAddMove(mv, computerMove) {
-        if (this.mvLast > 0) {
-            this.drawSquare(SRC(this.mvLast), false);
-            this.drawSquare(DST(this.mvLast), false);
+        if (this.lastMotion > 0) {
+            this.drawSquare(getSrcPosFromMotion(this.lastMotion), false);
+            this.drawSquare(getDstPosFromMotion(this.lastMotion), false);
         }
-        this.drawSquare(SRC(mv), true);
-        this.drawSquare(DST(mv), true);
+        this.drawSquare(getSrcPosFromMotion(mv), true);
+        this.drawSquare(getDstPosFromMotion(mv), true);
         this.sqSelected = 0;
-        this.mvLast = mv;
+        this.lastMotion = mv;
 
         if (this.pos.isMate()) {
-            this.playSound(computerMove ? "loss" : "win");
-            this.result = computerMove ? RESULT_LOSS : RESULT_WIN;
+            if (computerMove) {
+                this.result = RESULT_LOSS;
+                this.game_.onLose();
+            } else {
+                this.result = RESULT_WIN;
+                this.game_.onWin();
+            }
 
-            var pc = SIDE_TAG(this.pos.sdPlayer) + PIECE_KING;
-            var sqMate = 0;
-            for (var sq = 0; sq < 256; sq++) {
+            let pc = getSelfSideTag(this.pos.sdPlayer) + PIECE_KING;
+            let sqMate = 0;
+            for (let sq = 0; sq < 256; sq++) {
                 if (this.pos.squares[sq] == pc) {
                     sqMate = sq;
                     break;
                 }
             }
-            if (!this.animated || sqMate == 0) {
+            if (!this.game_.getAnimated() || sqMate == 0) {
                 this.postMate(computerMove);
                 return;
             }
 
             sqMate = this.flipped(sqMate);
-            var style = this.imgSquares[sqMate].style;
+            let style = this.imgSquares[sqMate].style;
             style.zIndex = 256;
-            var xMate = SQ_X(sqMate);
-            var step = MAX_STEP;
-            var this_ = this;
-            var timer = setInterval(function () {
+            let xMate = SQ_X(sqMate);
+            let step = MAX_STEP;
+            let this_ = this;
+            let timer = setInterval(function () {
                 if (step == 0) {
                     clearInterval(timer);
                     style.left = xMate + "px";
@@ -203,111 +181,118 @@ class Board {
             return;
         }
 
-        var vlRep = this.pos.repStatus(3);
+        let vlRep = this.pos.repStatus(3);
         if (vlRep > 0) {
             vlRep = this.pos.repValue(vlRep);
             if (vlRep > -WIN_VALUE && vlRep < WIN_VALUE) {
-                this.playSound("draw");
+                this.game_.onDraw(0);
                 this.result = RESULT_DRAW;
-                alertDelay("双方不变作和，辛苦了！");
             } else if (computerMove == (vlRep < 0)) {
-                this.playSound("loss");
+                this.game_.onLose(1);
                 this.result = RESULT_LOSS;
-                alertDelay("长打作负，请不要气馁！");
             } else {
-                this.playSound("win");
+                this.game_.onWin(1);
                 this.result = RESULT_WIN;
-                alertDelay("长打作负，祝贺你取得胜利！");
             }
-            this.postAddMove2();
+            this.onAddMove();
             this.busy = false;
             return;
         }
 
         if (this.pos.captured()) {
-            var hasMaterial = false;
-            for (var sq = 0; sq < 256; sq++) {
+            let hasMaterial = false;
+            for (let sq = 0; sq < 256; sq++) {
                 if (isChessOnBoard(sq) && (this.pos.squares[sq] & 7) > 2) {
                     hasMaterial = true;
                     break;
                 }
             }
             if (!hasMaterial) {
-                this.playSound("draw");
+                this.game_.onDraw(1);
                 this.result = RESULT_DRAW;
-                alertDelay("双方都没有进攻棋子了，辛苦了！");
-                this.postAddMove2();
+                this.onAddMove();
                 this.busy = false;
                 return;
             }
         } else if (this.pos.pcList.length > 100) {
-            var captured = false;
-            for (var i = 2; i <= 100; i++) {
+            let captured = false;
+            for (let i = 2; i <= 100; i++) {
                 if (this.pos.pcList[this.pos.pcList.length - i] > 0) {
                     captured = true;
                     break;
                 }
             }
             if (!captured) {
-                this.playSound("draw");
+                this.game_.onDraw(2);
                 this.result = RESULT_DRAW;
-                alertDelay("超过自然限着作和，辛苦了！");
-                this.postAddMove2();
+                this.onAddMove();
                 this.busy = false;
                 return;
             }
         }
 
         if (this.pos.inCheck()) {
-            this.playSound(computerMove ? "check2" : "check");
+            if (computerMove) {
+                this.game_.onAICheck();
+            } else {
+                this.game_.onCheck();
+            }
         } else if (this.pos.captured()) {
-            this.playSound(computerMove ? "capture2" : "capture");
+            if (computerMove) {
+                this.game_.onAICapture();
+            } else {
+                this.game_.onCapture();
+            }
         } else {
-            this.playSound(computerMove ? "move2" : "move");
+            if (computerMove) {
+                this.game_.onAIMove();
+            } else {
+                this.game_.onMove();
+            }
         }
 
-        this.postAddMove2();
+        this.onAddMove();
         this.response();
-    }
-
-    postAddMove2() {
-        if (typeof this.onAddMove == "function") {
-            this.onAddMove();
-        }
     }
 
     postMate(computerMove) {
         alertDelay(computerMove ? "请再接再厉！" : "祝贺你取得胜利！");
-        this.postAddMove2();
+        this.onAddMove();
         this.busy = false;
     }
 
+    /**
+     * @method AI 计算做出响应
+     */
     response() {
         if (this.search == null || !this.computerMove()) {
             this.busy = false;
             return;
         }
-        this.thinking.style.visibility = "visible";
-        var this_ = this;
+        this.game_.beginThinking();
+        let this_ = this;
         this.busy = true;
         setTimeout(function () {
-            this_.addMove(Game.getInstance().getBoard().search.searchMain(LIMIT_DEPTH,
-                Game.getInstance().getBoard().millis), true);
-            this_.thinking.style.visibility = "hidden";
+            this_.addMove(this_.search.searchMain(LIMIT_DEPTH, this_.millis), true);
+            this_.game_.endThinking();
         }, 250);
     }
 
-    clickSquare(sq_) {
+    /**
+     * @method 点击棋子
+     * @param {number} pos 棋子坐标
+     */
+    clickSquare(pos) {
         if (this.busy || this.result != RESULT_INIT) {
             return;
         }
-        var sq = this.flipped(sq_);
-        var pc = this.pos.squares[sq];
-        if ((pc & SIDE_TAG(this.pos.sdPlayer)) != 0) {
-            this.playSound("click");
-            if (this.mvLast != 0) {
-                this.drawSquare(SRC(this.mvLast), false);
-                this.drawSquare(DST(this.mvLast), false);
+        let sq = this.flipped(pos);
+        let pc = this.pos.squares[sq];
+        if ((pc & getSelfSideTag(this.pos.sdPlayer)) != 0) {
+            this.game_.onClickChess();
+            if (this.lastMotion != 0) {
+                this.drawSquare(getSrcPosFromMotion(this.lastMotion), false);
+                this.drawSquare(getDstPosFromMotion(this.lastMotion), false);
             }
             if (this.sqSelected) {
                 this.drawSquare(this.sqSelected, false);
@@ -315,25 +300,37 @@ class Board {
             this.drawSquare(sq, true);
             this.sqSelected = sq;
         } else if (this.sqSelected > 0) {
-            this.addMove(MOVE(this.sqSelected, sq), false);
+            this.addMove(makeMotionBySrcDst(this.sqSelected, sq), false);
         }
     }
 
+    /**
+     * @method 绘制棋子
+     * @param {number} sq 棋子坐标 
+     * @param {boolean} selected 是否选中状态 0-未选中, 1-选中
+     */
     drawSquare(sq, selected) {
-        var img = this.imgSquares[this.flipped(sq)];
+        let img = this.imgSquares[this.flipped(sq)];
         img.src = this.images + PIECE_NAME[this.pos.squares[sq]] + ".gif";
         img.style.backgroundImage = selected ? "url(" + this.images + "oos.gif)" : "";
     }
 
+    /**
+     * @method 刷新棋盘
+     */
     flushBoard() {
-        this.mvLast = this.pos.mvList[this.pos.mvList.length - 1];
-        for (var sq = 0; sq < 256; sq++) {
+        this.lastMotion = this.pos.motionList[this.pos.motionList.length - 1];
+        for (let sq = 0; sq < 256; sq++) {
             if (isChessOnBoard(sq)) {
-                this.drawSquare(sq, sq == SRC(this.mvLast) || sq == DST(this.mvLast));
+                this.drawSquare(sq, sq == getSrcPosFromMotion(this.lastMotion) || sq == getDstPosFromMotion(this.lastMotion));
             }
         }
     }
 
+    /**
+     * @method 重新开始
+     * @param {string} fen 
+     */
     restart(fen) {
         if (this.busy) {
             return;
@@ -341,30 +338,26 @@ class Board {
         this.result = RESULT_INIT;
         this.pos.fromFen(fen);
         this.flushBoard();
-        this.playSound("newgame");
+        this.game_.onNewGame();
         this.response();
     }
 
+    /**
+     * @method 悔棋
+     */
     retract() {
         if (this.busy) {
             return;
         }
         this.result = RESULT_INIT;
-        if (this.pos.mvList.length > 1) {
+        if (this.pos.motionList.length > 1) {
             this.pos.undoMakeMove();
         }
-        if (this.pos.mvList.length > 1 && this.computerMove()) {
+        if (this.pos.motionList.length > 1 && this.computerMove()) {
             this.pos.undoMakeMove();
         }
         this.flushBoard();
         this.response();
-    }
-
-    setSound(sound) {
-        this.sound = sound;
-        if (sound) {
-            this.playSound("click");
-        }
     }
 
     /**
@@ -372,21 +365,24 @@ class Board {
      * @param {number} mv 
      */
     move2Iccs(mv) {
-        let sqSrc = SRC(mv);
-        let sqDst = DST(mv);
-        return CHR(ASC("A") + FILE_X(sqSrc) - FILE_LEFT) +
-            CHR(ASC("9") - RANK_Y(sqSrc) + RANK_TOP) + "-" +
-            CHR(ASC("A") + FILE_X(sqDst) - FILE_LEFT) +
-            CHR(ASC("9") - RANK_Y(sqDst) + RANK_TOP);
+        let posSrc = getSrcPosFromMotion(mv);
+        let posDst = getDstPosFromMotion(mv);
+        return getCharFromByteCode(getCodeFromChar("A") + getChessPosX(posSrc) - FILE_LEFT) +
+            getCharFromByteCode(getCodeFromChar("9") - getChessPosY(posSrc) + RANK_TOP) + "-" +
+            getCharFromByteCode(getCodeFromChar("A") + getChessPosX(posDst) - FILE_LEFT) +
+            getCharFromByteCode(getCodeFromChar("9") - getChessPosY(posDst) + RANK_TOP);
     }
 
+    /**
+     * @method 显示着法
+     */
     onAddMove() {
-        let counter = (Game.getInstance().getBoard().pos.mvList.length >> 1);
+        let counter = (this.pos.motionList.length >> 1);
         let space = (counter > 99 ? "    " : "   ");
         counter = (counter > 9 ? "" : " ") + counter + ".";
-        let text = (Game.getInstance().getBoard().pos.sdPlayer == 0 ? space : counter) +
-            this.move2Iccs(Game.getInstance().getBoard().mvLast);
-        let value = "" + Game.getInstance().getBoard().mvLast;
+        let text = (this.pos.sdPlayer == 0 ? space : counter) +
+            this.move2Iccs(this.lastMotion);
+        let value = "" + this.lastMotion;
         try {
             selMoveList.add(createOption(text, value, false));
         } catch (e) {

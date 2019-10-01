@@ -10,10 +10,10 @@
  * @param {number} vl 目标元素
  */
 function binarySearch(vlss, vl) {
-    var low = 0;
-    var high = vlss.length - 1;
+    let low = 0;
+    let high = vlss.length - 1;
     while (low <= high) {
-        var mid = (low + high) >> 1;
+        let mid = (low + high) >> 1;
         if (vlss[mid][0] < vl) {
             low = mid + 1;
         } else if (vlss[mid][0] > vl) {
@@ -54,6 +54,22 @@ function shellSort(mvs, vls) {
         }
         stepLevel--;
     }
+}
+
+/**
+ * @method 从ASCII数值中获取对应的字符
+ * @param {number} code ASCII值 
+ */
+function getCharFromByteCode(code) {
+    return String.fromCharCode(code);
+}
+
+/**
+ * @method 获取字符串中首字符的ASCII值
+ * @param {string} char 字符串 
+ */
+function getCodeFromChar(char) {
+    return char.charCodeAt(0);
 }
 
 /**

@@ -1,6 +1,6 @@
 "use strict";
 
-var PUZZLE_LIST = [
+let PUZZLE_LIST = [
     "9/2Cca4/3k1C3/4P1p2/4N1b2/4R1r2/4c1n2/3p1n3/2rNK4/9 w",
     "4C4/4a4/b2ank2b/9/9/1RNR1crC1/3r1p3/3cKA3/4A4/4n4 w",
     "9/4a4/3k1a3/2R3r2/1N5n1/C7c/1N5n1/2R3r2/3p1p3/4K4 w",
@@ -244,24 +244,24 @@ var PUZZLE_LIST = [
 ];
 
 function test() {
-    var pos = new Position();
-    var legal = 0,
+    let pos = new Position();
+    let legal = 0,
         gened = 0,
         moved = 0,
         check = 0;
-    for (var i = 0; i < PUZZLE_LIST.length; i++) {
+    for (let i = 0; i < PUZZLE_LIST.length; i++) {
         pos.fromFen(PUZZLE_LIST[i]);
-        for (var sqSrc = 0; sqSrc < 256; sqSrc++) {
-            if (isChessOnBoard(sqSrc)) {
-                for (var sqDst = 0; sqDst < 256; sqDst++) {
-                    if (isChessOnBoard(sqDst)) {
-                        legal += (pos.legalMove(MOVE(sqSrc, sqDst)) ? 1 : 0);
+        for (let posSrc = 0; posSrc < 256; posSrc++) {
+            if (isChessOnBoard(posSrc)) {
+                for (let posDst = 0; posDst < 256; posDst++) {
+                    if (isChessOnBoard(posDst)) {
+                        legal += (pos.legalMove(makeMotionBySrcDst(posSrc, posDst)) ? 1 : 0);
                     }
                 }
             }
         }
-        var mvs = pos.generateMoves(null);
-        for (var j = 0; j < mvs.length; j++) {
+        let mvs = pos.generateMoves(null);
+        for (let j = 0; j < mvs.length; j++) {
             if (pos.makeMove(mvs[j])) {
                 moved++;
                 check += (pos.inCheck() ? 1 : 0);

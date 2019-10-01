@@ -33,16 +33,16 @@
                 </select></div>
 
             <div class="top_space">
-                <input type="button" class="button" value="重新开始" onclick="restart_click()">
+                <input type="button" class="button" value="重新开始" onclick="game.onClickRestart()">
             </div>
             <div class="top_space">
-                <input type="button" class="button" value="悔棋" onclick="retract_click()">
+                <input type="button" class="button" value="悔棋" onclick="game.onClickRetract()">
             </div>
 
             <div class="game_space"></div>
 
             <div class="label">电脑水平</div>
-            <div><select id="selLevel" size="3" onchange="level_change()">
+            <div><select id="selLevel" size="3" onchange="game.onClickLevelChange()">
                     <option selected value="0">入门</option>
                     <option value="1">业余</option>
                     <option value="2">专业</option>
@@ -51,18 +51,18 @@
             <div class="game_space"></div>
 
             <div>
-                <input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="board.animated = checked" />
+                <input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="game.setAnimated(checked)" />
                 <label for="chkAnimated">动画</label>
             </div>
             <div>
-                <input type="checkbox" class="checkbox" checked onclick="board.setSound(checked)" />
+                <input type="checkbox" class="checkbox" checked onclick="game.setSound(checked)" />
                 <label for="chkSound">音效</label>
             </div>
 
             <div class="game_space"></div>
 
             <div class="label">步骤</div>
-            <div><select id="selMoveList" size="10" onchange="moveList_change()">
+            <div><select id="selMoveList" size="10" onchange="game.onRecordListChange()">
                     <option selected value="0">=== 开始 ===</option>
                 </select></div>
         </div>

@@ -16,8 +16,8 @@ const UI_CCHESS_SIZE = 57; //棋子大小
 /**
  * 棋盘四周空余大小
  */
-var UI_BOARD_LEFT_LINE_POS = (UI_BOARD_WIDTH - UI_CCHESS_SIZE * 9) >> 1; //最左侧线的位置
-var UI_BOARD_TOP_LINE_POS = (UI_BOARD_HEIGHT - UI_CCHESS_SIZE * 10) >> 1; //最上方线的位置
+const UI_BOARD_LEFT_LINE_POS = (UI_BOARD_WIDTH - UI_CCHESS_SIZE * 9) >> 1; //最左侧线的位置
+const UI_BOARD_TOP_LINE_POS = (UI_BOARD_HEIGHT - UI_CCHESS_SIZE * 10) >> 1; //最上方线的位置
 
 /**
  * Loading 图大小及位置
@@ -36,9 +36,10 @@ const UI_THINKING_POS_TOP = (UI_BOARD_HEIGHT - UI_THINKING_SIZE) >> 1;
  * p-卒
  */
 const PIECE_NAME = [
-    "oo", null, null, null, null, null, null, null,
-    "rk", "ra", "rb", "rn", "rr", "rc", "rp", null,
-    "bk", "ba", "bb", "bn", "br", "bc", "bp", null,
+    "oo", null, null, null, null, null, null, null, //[0, 7]
+    "rk", "ra", "rb", "rn", "rr", "rc", "rp", null, //[8, 15] 红方
+    "bk", "ba", "bb", "bn", "br", "bc", "bp", null, //[16, 24] 黑方
+    //将,  士,   相,   马,   车,    炮,    卒
 ];
 
 

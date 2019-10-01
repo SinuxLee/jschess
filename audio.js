@@ -3,16 +3,14 @@
  */
 
 class GameAudio {
-    constructor(soundPath) {
+    constructor(game, container, soundPath) {
+        this.game_ = game;
         this.soundPath_ = soundPath;
+        this.container_ = container;
+        this.dummy = document.createElement("div");
+        this.dummy.style.position = "absolute";
+        container.appendChild(this.dummy);
     }
-
-    check2
-    capture2
-    move2
-
-
-
 
     playDrawSound() {
         this.playSound("draw");
@@ -50,8 +48,20 @@ class GameAudio {
         this.playSound("win");
     }
 
+    playAICheckSound() {
+        this.playSound("check2");
+    }
+
+    playAICaptureSound() {
+        this.playSound("capture2");
+    }
+
+    playAIMoveSound() {
+        this.playSound("move2");
+    }
+
     playSound(soundFile) {
-        if (!this.sound) {
+        if (!this.soundPath_ || !this.game_.getSound()) {
             return;
         }
         try {

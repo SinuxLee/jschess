@@ -41,9 +41,9 @@ class MoveSort {
 
         if (pos.inCheck()) {
             this.phase = PHASE_REST;
-            var mvsAll = pos.generateMoves(null);
-            for (var i = 0; i < mvsAll.length; i++) {
-                var mv = mvsAll[i]
+            let mvsAll = pos.generateMoves(null);
+            for (let i = 0; i < mvsAll.length; i++) {
+                let mv = mvsAll[i]
                 if (!pos.makeMove(mv)) {
                     continue;
                 }
@@ -87,7 +87,7 @@ class MoveSort {
                             this.phase = PHASE_REST;
                             this.mvs = this.pos.generateMoves(null);
                             this.vls = [];
-                            for (var i = 0; i < this.mvs.length; i++) {
+                            for (let i = 0; i < this.mvs.length; i++) {
                                 this.vls.push(this.historyTable[this.pos.historyIndex(this.mvs[i])]);
                             }
                             shellSort(this.mvs, this.vls);
@@ -95,7 +95,7 @@ class MoveSort {
                             // No Break
                         default:
                             while (this.index < this.mvs.length) {
-                                var mv = this.mvs[this.index];
+                                let mv = this.mvs[this.index];
                                 this.index++;
                                 if (mv != this.mvHash && mv != this.mvKiller1 && mv != this.mvKiller2) {
                                     return mv;
@@ -125,13 +125,13 @@ class Search {
     }
 
     probeHash(vlAlpha, vlBeta, depth, mv) {
-        var hash = this.getHashItem();
+        let hash = this.getHashItem();
         if (hash.zobristLock != this.pos.zobristLock) {
             mv[0] = 0;
             return -MATE_VALUE;
         }
         mv[0] = hash.mv;
-        var mate = false;
+        let mate = false;
         if (hash.vl > WIN_VALUE) {
             if (hash.vl <= BAN_VALUE) {
                 return -MATE_VALUE;
@@ -160,7 +160,7 @@ class Search {
     }
 
     recordHash(flag, vl, depth, mv) {
-        var hash = this.getHashItem();
+        let hash = this.getHashItem();
         if (hash.depth > depth) {
             return;
         }
@@ -187,7 +187,7 @@ class Search {
 
     setBestMove(mv, depth) {
         this.historyTable[this.pos.historyIndex(mv)] += depth * depth;
-        var mvsKiller = this.killerTable[this.pos.distance];
+        let mvsKiller = this.killerTable[this.pos.distance];
         if (mvsKiller[0] != mv) {
             mvsKiller[1] = mvsKiller[0];
             mvsKiller[0] = mv;
@@ -195,25 +195,25 @@ class Search {
     }
 
     searchQuiesc(vlAlpha_, vlBeta) {
-        var vlAlpha = vlAlpha_;
+        let vlAlpha = vlAlpha_;
         this.allNodes++;
-        var vl = this.pos.mateValue();
+        let vl = this.pos.mateValue();
         if (vl >= vlBeta) {
             return vl;
         }
-        var vlRep = this.pos.repStatus(1);
+        let vlRep = this.pos.repStatus(1);
         if (vlRep > 0) {
             return this.pos.repValue(vlRep);
         }
         if (this.pos.distance == LIMIT_DEPTH) {
             return this.pos.evaluate();
         }
-        var vlBest = -MATE_VALUE;
-        var mvs = [],
+        let vlBest = -MATE_VALUE;
+        let mvs = [],
             vls = [];
         if (this.pos.inCheck()) {
             mvs = this.pos.generateMoves(null);
-            for (var i = 0; i < mvs.length; i++) {
+            for (let i = 0; i < mvs.length; i++) {
                 vls.push(this.historyTable[this.pos.historyIndex(mvs[i])]);
             }
             shellSort(mvs, vls);
@@ -228,14 +228,14 @@ class Search {
             }
             mvs = this.pos.generateMoves(vls);
             shellSort(mvs, vls);
-            for (var i = 0; i < mvs.length; i++) {
-                if (vls[i] < 10 || (vls[i] < 20 && HOME_HALF(DST(mvs[i]), this.pos.sdPlayer))) {
+            for (let i = 0; i < mvs.length; i++) {
+                if (vls[i] < 10 || (vls[i] < 20 && isSelfHalf(getDstPosFromMotion(mvs[i]), this.pos.sdPlayer))) {
                     mvs.length = i;
                     break;
                 }
             }
         }
-        for (var i = 0; i < mvs.length; i++) {
+        for (let i = 0; i < mvs.length; i++) {
             if (!this.pos.makeMove(mvs[i])) {
                 continue;
             }
@@ -253,20 +253,20 @@ class Search {
     }
 
     searchFull(vlAlpha_, vlBeta, depth, noNull) {
-        var vlAlpha = vlAlpha_;
+        let vlAlpha = vlAlpha_;
         if (depth <= 0) {
             return this.searchQuiesc(vlAlpha, vlBeta);
         }
         this.allNodes++;
-        var vl = this.pos.mateValue();
+        let vl = this.pos.mateValue();
         if (vl >= vlBeta) {
             return vl;
         }
-        var vlRep = this.pos.repStatus(1);
+        let vlRep = this.pos.repStatus(1);
         if (vlRep > 0) {
             return this.pos.repValue(vlRep);
         }
-        var mvHash = [0];
+        let mvHash = [0];
         vl = this.probeHash(vlAlpha, vlBeta, depth, mvHash);
         if (vl > -MATE_VALUE) {
             return vl;
@@ -283,16 +283,16 @@ class Search {
                 return vl;
             }
         }
-        var hashFlag = HASH_ALPHA;
-        var vlBest = -MATE_VALUE;
-        var mvBest = 0;
-        var sort = new MoveSort(mvHash[0], this.pos, this.killerTable, this.historyTable);
-        var mv;
+        let hashFlag = HASH_ALPHA;
+        let vlBest = -MATE_VALUE;
+        let mvBest = 0;
+        let sort = new MoveSort(mvHash[0], this.pos, this.killerTable, this.historyTable);
+        let mv;
         while ((mv = sort.next()) > 0) {
             if (!this.pos.makeMove(mv)) {
                 continue;
             }
-            var newDepth = this.pos.inCheck() || sort.singleReply ? depth : depth - 1;
+            let newDepth = this.pos.inCheck() || sort.singleReply ? depth : depth - 1;
             if (vlBest == -MATE_VALUE) {
                 vl = -this.searchFull(-vlBeta, -vlAlpha, newDepth, false);
             } else {
@@ -327,15 +327,15 @@ class Search {
     }
 
     searchRoot(depth) {
-        var vlBest = -MATE_VALUE;
-        var sort = new MoveSort(this.mvResult, this.pos, this.killerTable, this.historyTable);
-        var mv;
+        let vlBest = -MATE_VALUE;
+        let sort = new MoveSort(this.mvResult, this.pos, this.killerTable, this.historyTable);
+        let mv;
         while ((mv = sort.next()) > 0) {
             if (!this.pos.makeMove(mv)) {
                 continue;
             }
-            var newDepth = this.pos.inCheck() ? depth : depth - 1;
-            var vl;
+            let newDepth = this.pos.inCheck() ? depth : depth - 1;
+            let vl;
             if (vlBest == -MATE_VALUE) {
                 vl = -this.searchFull(-MATE_VALUE, MATE_VALUE, newDepth, true);
             } else {
@@ -360,14 +360,14 @@ class Search {
     }
 
     searchUnique(vlBeta, depth) {
-        var sort = new MoveSort(this.mvResult, this.pos, this.killerTable, this.historyTable);
+        let sort = new MoveSort(this.mvResult, this.pos, this.killerTable, this.historyTable);
         sort.next();
-        var mv;
+        let mv;
         while ((mv = sort.next()) > 0) {
             if (!this.pos.makeMove(mv)) {
                 continue;
             }
-            var vl = -this.searchFull(-vlBeta, 1 - vlBeta,
+            let vl = -this.searchFull(-vlBeta, 1 - vlBeta,
                 this.pos.inCheck() ? depth : depth - 1, false);
             this.pos.undoMakeMove();
             if (vl >= vlBeta) {
@@ -393,7 +393,7 @@ class Search {
             this.pos.undoMakeMove();
         }
         this.hashTable = [];
-        for (var i = 0; i <= this.hashMask; i++) {
+        for (let i = 0; i <= this.hashMask; i++) {
             this.hashTable.push({
                 depth: 0,
                 flag: 0,
@@ -403,19 +403,19 @@ class Search {
             });
         }
         this.killerTable = [];
-        for (var i = 0; i < LIMIT_DEPTH; i++) {
+        for (let i = 0; i < LIMIT_DEPTH; i++) {
             this.killerTable.push([0, 0]);
         }
         this.historyTable = [];
-        for (var i = 0; i < 4096; i++) {
+        for (let i = 0; i < 4096; i++) {
             this.historyTable.push(0);
         }
         this.mvResult = 0;
         this.allNodes = 0;
         this.pos.distance = 0;
-        var t = new Date().getTime();
-        for (var i = 1; i <= depth; i++) {
-            var vl = this.searchRoot(i);
+        let t = new Date().getTime();
+        for (let i = 1; i <= depth; i++) {
+            let vl = this.searchRoot(i);
             this.allMillis = new Date().getTime() - t;
             if (this.allMillis > millis) {
                 break;

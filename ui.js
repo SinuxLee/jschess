@@ -8,63 +8,6 @@ const STARTUP_FEN = [
 ];
 
 /**
- * 修改AI等级
- */
-function level_change() {
-    let thinkTimeMs = Math.pow(10, selLevel.selectedIndex + 1);
-    Game.getInstance().setMaxThinkTimeMs(thinkTimeMs);
-}
-
-/**
- * 重新开始
- */
-function restart_click() {
-    selMoveList.options.length = 1;
-    selMoveList.selectedIndex = 0;
-    Game.getInstance().getBoard().computer = 1 - selMoveMode.selectedIndex;
-    Game.getInstance().restartGame(STARTUP_FEN[selHandicap.selectedIndex]);
-}
-
-/**
- * 悔棋
- */
-function retract_click() {
-    let board = Game.getInstance().getBoard();
-    for (let i = board.pos.mvList.length; i < selMoveList.options.length; i++) {
-        board.pos.makeMove(parseInt(selMoveList.options[i].value));
-    }
-    board.retract();
-    selMoveList.options.length = board.pos.mvList.length;
-    selMoveList.selectedIndex = selMoveList.options.length - 1;
-}
-
-/**
- * 走棋列表有改变
- */
-function moveList_change() {
-    let board = Game.getInstance().getBoard();
-    if (board.result == RESULT_INIT) {
-        selMoveList.selectedIndex = selMoveList.options.length - 1;
-        return;
-    }
-    let from = board.pos.mvList.length;
-    let to = selMoveList.selectedIndex;
-    if (from == to + 1) {
-        return;
-    }
-    if (from > to + 1) {
-        for (let i = to + 1; i < from; i++) {
-            board.pos.undoMakeMove();
-        }
-    } else {
-        for (let i = from; i <= to; i++) {
-            board.pos.makeMove(parseInt(selMoveList.options[i].value));
-        }
-    }
-    board.flushBoard();
-}
-
-/**
  * 在ui中添加走棋着法
  */
 function createOption(text, value, ie8) {
@@ -83,7 +26,7 @@ function createOption(text, value, ie8) {
  * @method 消息窗
  * @param {string} message 
  */
-function alertDelay(message, time) {    
+function alertDelay(message, time) {
     let delay = time || 250;
     setTimeout(function () {
         alert(message);
@@ -95,7 +38,7 @@ function alertDelay(message, time) {
  * @param {number} sq 
  */
 function SQ_X(sq) {
-    return UI_BOARD_LEFT_LINE_POS + (FILE_X(sq) - 3) * UI_CCHESS_SIZE;
+    return UI_BOARD_LEFT_LINE_POS + (getChessPosX(sq) - 3) * UI_CCHESS_SIZE;
 }
 
 /**
@@ -103,7 +46,7 @@ function SQ_X(sq) {
  * @param {number} sq 
  */
 function SQ_Y(sq) {
-    return UI_BOARD_TOP_LINE_POS + (RANK_Y(sq) - 3) * UI_CCHESS_SIZE;
+    return UI_BOARD_TOP_LINE_POS + (getChessPosY(sq) - 3) * UI_CCHESS_SIZE;
 }
 
 /**
@@ -129,5 +72,49 @@ class UIBoard {
         style.height = UI_BOARD_HEIGHT + "px";
         style.background = "url(" + images + "board.jpg)";
 
+        //思考缓冲图
+        this.thinking = document.createElement("img");
+        this.thinking.src = images + "thinking.gif";
+        let imgStyle = this.thinking.style;
+        imgStyle.visibility = "hidden";
+        imgStyle.position = "absolute";
+        imgStyle.left = UI_THINKING_POS_LEFT + "px";
+        imgStyle.top = UI_THINKING_POS_TOP + "px";
+        container.appendChild(this.thinking);
+
+        //棋子
+        this.imgSquares = [];
+
+        /*
+        for (let sq = 0; sq < 256; sq++) {
+            if (!isChessOnBoard(sq)) {
+                this.imgSquares.push(null);
+                continue;
+            }
+            let img = document.createElement("img");
+            let style = img.style;
+            style.position = "absolute";
+            style.left = SQ_X(sq) + "px";
+            style.top = SQ_Y(sq) + "px";
+            style.width = UI_CCHESS_SIZE + "px";
+            style.height = UI_CCHESS_SIZE + "px";
+            style.zIndex = 0;
+            img.onmousedown = function (sq_) {
+                return () => {
+                    //this_.clickSquare(sq_);
+                }
+            }(sq);
+
+            container.appendChild(img);
+            this.imgSquares.push(img);
+        }*/
+    }
+
+    showThinkBox() {
+        this.thinking.style.visibility = "visible";
+    }
+
+    hideThinkBox() {
+        this.thinking.style.visibility = "hidden";
     }
 }
