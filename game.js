@@ -17,6 +17,12 @@
  * 
  * 术语定义:
  * 1.Piece 棋子，不要用chess！chess是国际象棋的意思
+ * 
+ * Desk --> Player --> Board --> Piece      Rule    AI
+ * |        |           |          |        |       |
+ * 维持     保存        保存        走棋    附加    计算
+ * 游戏     玩家        棋子        基本    规则    下一步棋
+ * 流程     信息        走棋信息    规则
  */
 
 "use strict";
@@ -215,6 +221,13 @@ class Game {
             }
         }
         board.flushBoard();
+    }
+
+    /**
+     * 刷新棋盘UI
+     */
+    onFlushBoard() {
+        this.uiBoard_.flushBoard();
     }
 }
 

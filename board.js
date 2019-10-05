@@ -38,23 +38,25 @@ class Board {
         this.search = null;
         this.imgSquares = [];
         this.sqSelected = 0; //被选中的棋子
-        this.lastMotion = 0; //最后一步棋
+
+        this.initBoard();
+
         this.millis = 0; //思考的时间
         this.computer = -1; //机器人开关, -1 - 不用机器, 0 - 机器人红方, 1 - 机器人黑方
-        this.result = RESULT_INIT; //对局结果
         this.busy = false; //是否思考中
-
         let this_ = this;
         for (let sq = 0; sq < 256; sq++) {
             if (!isChessOnBoard(sq)) {
                 this.imgSquares.push(null);
                 continue;
             }
+
             let img = document.createElement("img");
+
             let style = img.style;
             style.position = "absolute";
-            style.left = SQ_X(sq) + "px";
-            style.top = SQ_Y(sq) + "px";
+            style.left = getUiXFromPos(sq) + "px";
+            style.top = getUiYFromPos(sq) + "px";
             style.width = UI_CCHESS_SIZE + "px";
             style.height = UI_CCHESS_SIZE + "px";
             style.zIndex = 0;
@@ -69,6 +71,11 @@ class Board {
         }
 
         this.flushBoard();
+    }
+
+    initBoard() {
+        this.lastMotion = 0; //最后一步棋
+        this.result = RESULT_INIT; //对局结果
     }
 
     setSearch(hashLevel) {
@@ -102,11 +109,11 @@ class Board {
         }
 
         let posSrc = this.flipped(getSrcPosFromMotion(mv));
-        let xSrc = SQ_X(posSrc);
-        let ySrc = SQ_Y(posSrc);
+        let xSrc = getUiXFromPos(posSrc);
+        let ySrc = getUiYFromPos(posSrc);
         let posDst = this.flipped(getDstPosFromMotion(mv));
-        let xDst = SQ_X(posDst);
-        let yDst = SQ_Y(posDst);
+        let xDst = getUiXFromPos(posDst);
+        let yDst = getUiYFromPos(posDst);
 
         let style = this.imgSquares[posSrc].style;
         style.zIndex = 256;
@@ -120,8 +127,8 @@ class Board {
                 style.zIndex = 0;
                 this_.postAddMove(mv, computerMove);
             } else {
-                style.left = MOVE_PX(xSrc, xDst, step);
-                style.top = MOVE_PX(ySrc, yDst, step);
+                style.left = getMotionPixelByStep(xSrc, xDst, step);
+                style.top = getMotionPixelByStep(ySrc, yDst, step);
                 step--;
             }
         }, 16);
@@ -162,7 +169,7 @@ class Board {
             sqMate = this.flipped(sqMate);
             let style = this.imgSquares[sqMate].style;
             style.zIndex = 256;
-            let xMate = SQ_X(sqMate);
+            let xMate = getUiXFromPos(sqMate);
             let step = MAX_STEP;
             let this_ = this;
             let timer = setInterval(function () {
@@ -319,7 +326,6 @@ class Board {
      * @method 刷新棋盘
      */
     flushBoard() {
-        this.lastMotion = this.pos.motionList[this.pos.motionList.length - 1];
         for (let sq = 0; sq < 256; sq++) {
             if (isChessOnBoard(sq)) {
                 this.drawSquare(sq, sq == getSrcPosFromMotion(this.lastMotion) || sq == getDstPosFromMotion(this.lastMotion));
@@ -335,7 +341,7 @@ class Board {
         if (this.busy) {
             return;
         }
-        this.result = RESULT_INIT;
+        this.initBoard();
         this.pos.fromFen(fen);
         this.flushBoard();
         this.game_.onNewGame();
@@ -356,6 +362,8 @@ class Board {
         if (this.pos.motionList.length > 1 && this.computerMove()) {
             this.pos.undoMakeMove();
         }
+
+        this.lastMotion = this.pos.motionList[this.pos.motionList.length - 1];
         this.flushBoard();
         this.response();
     }

@@ -250,25 +250,39 @@ function test() {
         moved = 0,
         check = 0;
     for (let i = 0; i < PUZZLE_LIST.length; i++) {
+        let curMoved = 0;
+        let curChecked = 0;
+        let curLegal = 0;
+
         pos.fromFen(PUZZLE_LIST[i]);
+        //尝试移动每个棋子
         for (let posSrc = 0; posSrc < 256; posSrc++) {
             if (isChessOnBoard(posSrc)) {
                 for (let posDst = 0; posDst < 256; posDst++) {
                     if (isChessOnBoard(posDst)) {
-                        legal += (pos.legalMove(makeMotionBySrcDst(posSrc, posDst)) ? 1 : 0);
+                        //尝试将当前棋子移动到其它位置
+                        curLegal += (pos.legalMove(makeMotionBySrcDst(posSrc, posDst)) ? 1 : 0);
                     }
                 }
             }
         }
-        let mvs = pos.generateMoves(null);
+
+        let mvs = pos.generateMoves(null); //产生可行的着法
         for (let j = 0; j < mvs.length; j++) {
             if (pos.makeMove(mvs[j])) {
-                moved++;
-                check += (pos.inCheck() ? 1 : 0);
+                curMoved++;
+                curChecked += (pos.inCheck() ? 1 : 0);
                 pos.undoMakeMove();
             }
         }
         gened += mvs.length;
+        moved += curMoved;
+        check += curChecked;
+        legal += curLegal;
+
+        console.log("test" + i + ", 合法:" + curLegal + ", shegnch:" + mvs.length + ", 可移动:" + curMoved + ", 校验:" + curChecked);
     }
-    alert(legal + "|" + gened + "|" + moved + "|" + check);
+    console.log("合法个数:" + legal + ", 生成的个数:" + gened + ", 可移动的个数:" + moved + ", 通过校验的个数:" + check);
 }
+
+test();

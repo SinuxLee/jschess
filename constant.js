@@ -59,7 +59,7 @@ const RESULT_WIN = 1; //赢
 const RESULT_DRAW = 2; //平
 const RESULT_LOSS = 3; //输
 
-//最大位移的像素点
+//动画最多拆分为8次移动
 const MAX_STEP = 8;
 
 //fen格式化

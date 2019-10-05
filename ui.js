@@ -35,18 +35,18 @@ function alertDelay(message, time) {
 
 /**
  * @method 获取棋子在界面中的X坐标
- * @param {number} sq 
+ * @param {number} pos 
  */
-function SQ_X(sq) {
-    return UI_BOARD_LEFT_LINE_POS + (getChessPosX(sq) - 3) * UI_CCHESS_SIZE;
+function getUiXFromPos(pos) {
+    return UI_BOARD_LEFT_LINE_POS + (getChessPosX(pos) - 3) * UI_CCHESS_SIZE;
 }
 
 /**
  * @method 获取棋子在界面中的Y坐标
- * @param {number} sq 
+ * @param {number} pos 
  */
-function SQ_Y(sq) {
-    return UI_BOARD_TOP_LINE_POS + (getChessPosY(sq) - 3) * UI_CCHESS_SIZE;
+function getUiYFromPos(pos) {
+    return UI_BOARD_TOP_LINE_POS + (getChessPosY(pos) - 3) * UI_CCHESS_SIZE;
 }
 
 /**
@@ -55,7 +55,7 @@ function SQ_Y(sq) {
  * @param {number} dst 
  * @param {number} step 步长,越来越小就形成了从src到dst的动画
  */
-function MOVE_PX(src, dst, step) {
+function getMotionPixelByStep(src, dst, step) {
     return Math.floor((src * step + dst * (MAX_STEP - step)) / MAX_STEP + 0.5) + "px";
 }
 
@@ -94,8 +94,8 @@ class UIBoard {
             let img = document.createElement("img");
             let style = img.style;
             style.position = "absolute";
-            style.left = SQ_X(sq) + "px";
-            style.top = SQ_Y(sq) + "px";
+            style.left = getUiXFromPos(sq) + "px";
+            style.top = getUiYFromPos(sq) + "px";
             style.width = UI_CCHESS_SIZE + "px";
             style.height = UI_CCHESS_SIZE + "px";
             style.zIndex = 0;
@@ -116,5 +116,16 @@ class UIBoard {
 
     hideThinkBox() {
         this.thinking.style.visibility = "hidden";
+    }
+
+    /**
+     * @method 刷新棋盘
+     */
+    flushBoard() {
+        for (let sq = 0; sq < 256; sq++) {
+            if (isChessOnBoard(sq)) {
+                this.drawSquare(sq, sq == getSrcPosFromMotion(this.lastMotion) || sq == getDstPosFromMotion(this.lastMotion));
+            }
+        }
     }
 }
