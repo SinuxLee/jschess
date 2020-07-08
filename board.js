@@ -44,7 +44,6 @@ class Board {
         this.millis = 0; //思考的时间
         this.computer = -1; //机器人开关, -1 - 不用机器, 0 - 机器人红方, 1 - 机器人黑方
         this.busy = false; //是否思考中
-        let this_ = this;
         for (let sq = 0; sq < 256; sq++) {
             if (!isChessOnBoard(sq)) {
                 this.imgSquares.push(null);
@@ -62,9 +61,9 @@ class Board {
             style.zIndex = 0;
             img.onmousedown = function (sq_) {
                 return () => {
-                    this_.clickSquare(sq_);
+                    this.clickSquare(sq_);
                 }
-            }(sq);
+            }.bind(this)(sq);
 
             container.appendChild(img);
             this.imgSquares.push(img);
@@ -118,20 +117,19 @@ class Board {
         let style = this.imgSquares[posSrc].style;
         style.zIndex = 256;
         let step = MAX_STEP - 1;
-        let this_ = this;
         let timer = setInterval(function () {
             if (step == 0) {
                 clearInterval(timer);
                 style.left = xSrc + "px";
                 style.top = ySrc + "px";
                 style.zIndex = 0;
-                this_.postAddMove(mv, computerMove);
+                this.postAddMove(mv, computerMove);
             } else {
                 style.left = getMotionPixelByStep(xSrc, xDst, step);
                 style.top = getMotionPixelByStep(ySrc, yDst, step);
                 step--;
             }
-        }, 16);
+        }.bind(this), 16);
     }
 
     postAddMove(mv, computerMove) {
@@ -171,20 +169,19 @@ class Board {
             style.zIndex = 256;
             let xMate = getUiXFromPos(sqMate);
             let step = MAX_STEP;
-            let this_ = this;
             let timer = setInterval(function () {
                 if (step == 0) {
                     clearInterval(timer);
                     style.left = xMate + "px";
                     style.zIndex = 0;
-                    this_.imgSquares[sqMate].src = this_.images +
-                        (this_.pos.sdPlayer == 0 ? "r" : "b") + "km.gif";
-                    this_.postMate(computerMove);
+                    this.imgSquares[sqMate].src = this.images +
+                        (this.pos.sdPlayer == 0 ? "r" : "b") + "km.gif";
+                    this.postMate(computerMove);
                 } else {
                     style.left = (xMate + ((step & 1) == 0 ? step : -step) * 2) + "px";
                     step--;
                 }
-            }, 50);
+            }.bind(this), 50);
             return;
         }
 
@@ -277,12 +274,11 @@ class Board {
             return;
         }
         this.game_.beginThinking();
-        let this_ = this;
         this.busy = true;
         setTimeout(function () {
-            this_.addMove(this_.search.searchMain(LIMIT_DEPTH, this_.millis), true);
-            this_.game_.endThinking();
-        }, 250);
+            this.addMove(this.search.searchMain(LIMIT_DEPTH, this.millis), true);
+            this.game_.endThinking();
+        }.bind(this), 250);
     }
 
     /**

@@ -295,7 +295,15 @@ for (let i = 0; i < 14; i++) {
 
 class Position {
     constructor() {
-
+        this.sdPlayer = 0;
+        this.squares = [];
+        this.zobristKey = this.zobristLock = 0;
+        this.vlWhite = this.vlBlack = 0;
+        this.motionList = [0]; //×ßÆåÁÐ±í
+        this.pcList = [0];
+        this.keyList = [0];
+        this.chkList = [];
+        this.distance = 0;
     }
 
     /**
