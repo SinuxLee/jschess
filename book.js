@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
-const BOOK_DAT = [
+export const BOOK_DAT = [
     [203040, 34229, 6],
     [509427, 33955, 1],
     [509427, 47046, 2],

@@ -255,19 +255,19 @@ function test() {
         let curLegal = 0;
 
         pos.fromFen(PUZZLE_LIST[i]);
-        //³¢ÊÔÒÆ¶¯Ã¿¸öÆå×Ó
+        //å°è¯•ç§»åŠ¨æ¯ä¸ªæ£‹å­
         for (let posSrc = 0; posSrc < 256; posSrc++) {
             if (isChessOnBoard(posSrc)) {
                 for (let posDst = 0; posDst < 256; posDst++) {
                     if (isChessOnBoard(posDst)) {
-                        //³¢ÊÔ½«µ±Ç°Æå×ÓÒÆ¶¯µ½ÆäËüÎ»ÖÃ
+                        //å°è¯•å°†å½“å‰æ£‹å­ç§»åŠ¨åˆ°å…¶å®ƒä½ç½®
                         curLegal += (pos.legalMove(makeMotionBySrcDst(posSrc, posDst)) ? 1 : 0);
                     }
                 }
             }
         }
 
-        let mvs = pos.generateMoves(null); //²úÉú¿ÉÐÐµÄ×Å·¨
+        let mvs = pos.generateMoves(null); //äº§ç”Ÿå¯è¡Œçš„ç€æ³•
         for (let j = 0; j < mvs.length; j++) {
             if (pos.makeMove(mvs[j])) {
                 curMoved++;
@@ -280,9 +280,9 @@ function test() {
         check += curChecked;
         legal += curLegal;
 
-        console.log("test" + i + ", ºÏ·¨:" + curLegal + ", shegnch:" + mvs.length + ", ¿ÉÒÆ¶¯:" + curMoved + ", Ð£Ñé:" + curChecked);
+        console.log("test" + i + ", åˆæ³•:" + curLegal + ", shegnch:" + mvs.length + ", å¯ç§»åŠ¨:" + curMoved + ", æ ¡éªŒ:" + curChecked);
     }
-    console.log("ºÏ·¨¸öÊý:" + legal + ", Éú³ÉµÄ¸öÊý:" + gened + ", ¿ÉÒÆ¶¯µÄ¸öÊý:" + moved + ", Í¨¹ýÐ£ÑéµÄ¸öÊý:" + check);
+    console.log("åˆæ³•ä¸ªæ•°:" + legal + ", ç”Ÿæˆçš„ä¸ªæ•°:" + gened + ", å¯ç§»åŠ¨çš„ä¸ªæ•°:" + moved + ", é€šè¿‡æ ¡éªŒçš„ä¸ªæ•°:" + check);
 }
 
 test();

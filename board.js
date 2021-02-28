@@ -22,11 +22,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
+import {Position,isChessOnBoard,getSrcPosFromMotion,
+    getDstPosFromMotion,getSelfSideTag,makeMotionBySrcDst,
+    getChessPosX,getChessPosY,flipPos} from "./position.js";
+import * as constant from "./constant.js";
+import {getUiXFromPos,getUiYFromPos,getMotionPixelByStep,createOption,alertDelay} from "./ui.js";
+import {Search,LIMIT_DEPTH} from "./search.js";
+import {getCodeFromChar,getCharFromByteCode} from "./util.js";
+
 /**
  * @class Board
- * @classdesc ÆåÅÌ
+ * @classdesc æ£‹ç›˜
  */
-class Board {
+export class Board {
     constructor(game, container, images, sounds) {
         this.game_ = game;
         this.images = images;
@@ -37,13 +45,13 @@ class Board {
 
         this.search = null;
         this.imgSquares = [];
-        this.sqSelected = 0; //±»Ñ¡ÖĞµÄÆå×Ó
+        this.sqSelected = 0; //è¢«é€‰ä¸­çš„æ£‹å­
 
         this.initBoard();
 
-        this.millis = 0; //Ë¼¿¼µÄÊ±¼ä
-        this.computer = -1; //»úÆ÷ÈË¿ª¹Ø, -1 - ²»ÓÃ»úÆ÷, 0 - »úÆ÷ÈËºì·½, 1 - »úÆ÷ÈËºÚ·½
-        this.busy = false; //ÊÇ·ñË¼¿¼ÖĞ
+        this.millis = 0; //æ€è€ƒçš„æ—¶é—´
+        this.computer = -1; //æœºå™¨äººå¼€å…³, -1 - ä¸ç”¨æœºå™¨, 0 - æœºå™¨äººçº¢æ–¹, 1 - æœºå™¨äººé»‘æ–¹
+        this.busy = false; //æ˜¯å¦æ€è€ƒä¸­
         for (let sq = 0; sq < 256; sq++) {
             if (!isChessOnBoard(sq)) {
                 this.imgSquares.push(null);
@@ -56,8 +64,8 @@ class Board {
             style.position = "absolute";
             style.left = getUiXFromPos(sq) + "px";
             style.top = getUiYFromPos(sq) + "px";
-            style.width = UI_CCHESS_SIZE + "px";
-            style.height = UI_CCHESS_SIZE + "px";
+            style.width = constant.UI_CCHESS_SIZE + "px";
+            style.height = constant.UI_CCHESS_SIZE + "px";
             style.zIndex = 0;
             img.onmousedown = function (sq_) {
                 return () => {
@@ -73,8 +81,8 @@ class Board {
     }
 
     initBoard() {
-        this.lastMotion = 0; //×îºóÒ»²½Æå
-        this.result = RESULT_INIT; //¶Ô¾Ö½á¹û
+        this.lastMotion = 0; //æœ€åä¸€æ­¥æ£‹
+        this.result = constant.RESULT_INIT; //å¯¹å±€ç»“æœ
     }
 
     setSearch(hashLevel) {
@@ -116,7 +124,7 @@ class Board {
 
         let style = this.imgSquares[posSrc].style;
         style.zIndex = 256;
-        let step = MAX_STEP - 1;
+        let step = constant.MAX_STEP - 1;
         let timer = setInterval(function () {
             if (step == 0) {
                 clearInterval(timer);
@@ -144,14 +152,14 @@ class Board {
 
         if (this.pos.isMate()) {
             if (computerMove) {
-                this.result = RESULT_LOSS;
+                this.result = constant.RESULT_LOSS;
                 this.game_.onLose();
             } else {
-                this.result = RESULT_WIN;
+                this.result = constant.RESULT_WIN;
                 this.game_.onWin();
             }
 
-            let pc = getSelfSideTag(this.pos.sdPlayer) + PIECE_KING;
+            let pc = getSelfSideTag(this.pos.sdPlayer) + constant.PIECE_KING;
             let sqMate = 0;
             for (let sq = 0; sq < 256; sq++) {
                 if (this.pos.squares[sq] == pc) {
@@ -168,7 +176,7 @@ class Board {
             let style = this.imgSquares[sqMate].style;
             style.zIndex = 256;
             let xMate = getUiXFromPos(sqMate);
-            let step = MAX_STEP;
+            let step = constant.MAX_STEP;
             let timer = setInterval(function () {
                 if (step == 0) {
                     clearInterval(timer);
@@ -188,9 +196,9 @@ class Board {
         let vlRep = this.pos.repStatus(3);
         if (vlRep > 0) {
             vlRep = this.pos.repValue(vlRep);
-            if (vlRep > -WIN_VALUE && vlRep < WIN_VALUE) {
+            if (vlRep > -constant.WIN_VALUE && vlRep < constant.WIN_VALUE) {
                 this.game_.onDraw(0);
-                this.result = RESULT_DRAW;
+                this.result = constant.RESULT_DRAW;
             } else if (computerMove == (vlRep < 0)) {
                 this.game_.onLose(1);
                 this.result = RESULT_LOSS;
@@ -228,7 +236,7 @@ class Board {
             }
             if (!captured) {
                 this.game_.onDraw(2);
-                this.result = RESULT_DRAW;
+                this.result = constant.RESULT_DRAW;
                 this.onAddMove();
                 this.busy = false;
                 return;
@@ -260,13 +268,13 @@ class Board {
     }
 
     postMate(computerMove) {
-        alertDelay(computerMove ? "ÇëÔÙ½ÓÔÙÀ÷£¡" : "×£ºØÄãÈ¡µÃÊ¤Àû£¡");
+        alertDelay(computerMove ? "è¯·å†æ¥å†å‰ï¼" : "ç¥è´ºä½ å–å¾—èƒœåˆ©ï¼");
         this.onAddMove();
         this.busy = false;
     }
 
     /**
-     * @method AI ¼ÆËã×ö³öÏìÓ¦
+     * @method AI è®¡ç®—åšå‡ºå“åº”
      */
     response() {
         if (this.search == null || !this.computerMove()) {
@@ -282,11 +290,11 @@ class Board {
     }
 
     /**
-     * @method µã»÷Æå×Ó
-     * @param {number} pos Æå×Ó×ø±ê
+     * @method ç‚¹å‡»æ£‹å­
+     * @param {number} pos æ£‹å­åæ ‡
      */
     clickSquare(pos) {
-        if (this.busy || this.result != RESULT_INIT) {
+        if (this.busy || this.result != constant.RESULT_INIT) {
             return;
         }
         let sq = this.flipped(pos);
@@ -308,18 +316,18 @@ class Board {
     }
 
     /**
-     * @method »æÖÆÆå×Ó
-     * @param {number} sq Æå×Ó×ø±ê 
-     * @param {boolean} selected ÊÇ·ñÑ¡ÖĞ×´Ì¬ 0-Î´Ñ¡ÖĞ, 1-Ñ¡ÖĞ
+     * @method ç»˜åˆ¶æ£‹å­
+     * @param {number} sq æ£‹å­åæ ‡ 
+     * @param {boolean} selected æ˜¯å¦é€‰ä¸­çŠ¶æ€ 0-æœªé€‰ä¸­, 1-é€‰ä¸­
      */
     drawSquare(sq, selected) {
         let img = this.imgSquares[this.flipped(sq)];
-        img.src = this.images + PIECE_NAME[this.pos.squares[sq]] + ".gif";
+        img.src = this.images + constant.PIECE_NAME[this.pos.squares[sq]] + ".gif";
         img.style.backgroundImage = selected ? "url(" + this.images + "oos.gif)" : "";
     }
 
     /**
-     * @method Ë¢ĞÂÆåÅÌ
+     * @method åˆ·æ–°æ£‹ç›˜
      */
     flushBoard() {
         for (let sq = 0; sq < 256; sq++) {
@@ -330,7 +338,7 @@ class Board {
     }
 
     /**
-     * @method ÖØĞÂ¿ªÊ¼
+     * @method é‡æ–°å¼€å§‹
      * @param {string} fen 
      */
     restart(fen) {
@@ -345,13 +353,13 @@ class Board {
     }
 
     /**
-     * @method »ÚÆå
+     * @method æ‚”æ£‹
      */
     retract() {
         if (this.busy) {
             return;
         }
-        this.result = RESULT_INIT;
+        this.result = constant.RESULT_INIT;
         if (this.pos.motionList.length > 1) {
             this.pos.undoMakeMove();
         }
@@ -365,20 +373,20 @@ class Board {
     }
 
     /**
-     * @method ×ßÆå×Å·¨×ª»»³ÉICCS×ø±ê¸ñÊ½£¬¼´×Å·¨±íÊ¾³ÉÆğµãºÍÖÕµãµÄ×ø±ê¡£
+     * @method èµ°æ£‹ç€æ³•è½¬æ¢æˆICCSåæ ‡æ ¼å¼ï¼Œå³ç€æ³•è¡¨ç¤ºæˆèµ·ç‚¹å’Œç»ˆç‚¹çš„åæ ‡ã€‚
      * @param {number} mv 
      */
     move2Iccs(mv) {
         let posSrc = getSrcPosFromMotion(mv);
         let posDst = getDstPosFromMotion(mv);
-        return getCharFromByteCode(getCodeFromChar("A") + getChessPosX(posSrc) - FILE_LEFT) +
-            getCharFromByteCode(getCodeFromChar("9") - getChessPosY(posSrc) + RANK_TOP) + "-" +
-            getCharFromByteCode(getCodeFromChar("A") + getChessPosX(posDst) - FILE_LEFT) +
-            getCharFromByteCode(getCodeFromChar("9") - getChessPosY(posDst) + RANK_TOP);
+        return getCharFromByteCode(getCodeFromChar("A") + getChessPosX(posSrc) - constant.FILE_LEFT) +
+            getCharFromByteCode(getCodeFromChar("9") - getChessPosY(posSrc) + constant.RANK_TOP) + "-" +
+            getCharFromByteCode(getCodeFromChar("A") + getChessPosX(posDst) - constant.FILE_LEFT) +
+            getCharFromByteCode(getCodeFromChar("9") - getChessPosY(posDst) + constant.RANK_TOP);
     }
 
     /**
-     * @method ÏÔÊ¾×Å·¨
+     * @method æ˜¾ç¤ºç€æ³•
      */
     onAddMove() {
         let counter = (this.pos.motionList.length >> 1);

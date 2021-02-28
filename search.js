@@ -22,7 +22,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
-//≤ªÕ¨µƒΩ◊∂Œ
+import * as position from "./position.js";
+import {shellSort} from "./util.js";
+
+//‰∏çÂêåÁöÑÈò∂ÊÆµ
 const PHASE_HASH = 0;
 const PHASE_KILLER_1 = 1;
 const PHASE_KILLER_2 = 2;
@@ -106,15 +109,15 @@ class MoveSort {
     }
 }
 
-const LIMIT_DEPTH = 64; //◊Ó¥Û…Ó∂»
-const NULL_DEPTH = 2; //◊Ó–°…Ó∂»
-const RANDOMNESS = 8; //◊Ó¥ÛÀÊª˙÷µ
+export const LIMIT_DEPTH = 64; //ÊúÄÂ§ßÊ∑±Â∫¶
+const NULL_DEPTH = 2; //ÊúÄÂ∞èÊ∑±Â∫¶
+const RANDOMNESS = 8; //ÊúÄÂ§ßÈöèÊú∫ÂÄº
 
 const HASH_ALPHA = 1;
 const HASH_BETA = 2;
 const HASH_PV = 3;
 
-class Search {
+export class Search {
     constructor(pos, hashLevel) {
         this.hashMask = (1 << hashLevel) - 1;
         this.pos = pos;
@@ -128,33 +131,33 @@ class Search {
         let hash = this.getHashItem();
         if (hash.zobristLock != this.pos.zobristLock) {
             mv[0] = 0;
-            return -MATE_VALUE;
+            return -position.MATE_VALUE;
         }
         mv[0] = hash.mv;
         let mate = false;
-        if (hash.vl > WIN_VALUE) {
-            if (hash.vl <= BAN_VALUE) {
-                return -MATE_VALUE;
+        if (hash.vl > position.WIN_VALUE) {
+            if (hash.vl <= position.BAN_VALUE) {
+                return -position.MATE_VALUE;
             }
             hash.vl -= this.pos.distance;
             mate = true;
-        } else if (hash.vl < -WIN_VALUE) {
-            if (hash.vl >= -BAN_VALUE) {
-                return -MATE_VALUE;
+        } else if (hash.vl < -position.WIN_VALUE) {
+            if (hash.vl >= -position.BAN_VALUE) {
+                return -position.ATE_VALUE;
             }
             hash.vl += this.pos.distance;
             mate = true;
         } else if (hash.vl == this.pos.drawValue()) {
-            return -MATE_VALUE;
+            return -position.MATE_VALUE;
         }
         if (hash.depth < depth && !mate) {
-            return -MATE_VALUE;
+            return -position.MATE_VALUE;
         }
         if (hash.flag == HASH_BETA) {
-            return (hash.vl >= vlBeta ? hash.vl : -MATE_VALUE);
+            return (hash.vl >= vlBeta ? hash.vl : -position.MATE_VALUE);
         }
         if (hash.flag == HASH_ALPHA) {
-            return (hash.vl <= vlAlpha ? hash.vl : -MATE_VALUE);
+            return (hash.vl <= vlAlpha ? hash.vl : -position.MATE_VALUE);
         }
         return hash.vl;
     }
@@ -166,13 +169,13 @@ class Search {
         }
         hash.flag = flag;
         hash.depth = depth;
-        if (vl > WIN_VALUE) {
-            if (mv == 0 && vl <= BAN_VALUE) {
+        if (vl > position.WIN_VALUE) {
+            if (mv == 0 && vl <= position.BAN_VALUE) {
                 return;
             }
             hash.vl = vl + this.pos.distance;
-        } else if (vl < -WIN_VALUE) {
-            if (mv == 0 && vl >= -BAN_VALUE) {
+        } else if (vl < -position.WIN_VALUE) {
+            if (mv == 0 && vl >= -position.BAN_VALUE) {
                 return;
             }
             hash.vl = vl - this.pos.distance;
@@ -208,7 +211,7 @@ class Search {
         if (this.pos.distance == LIMIT_DEPTH) {
             return this.pos.evaluate();
         }
-        let vlBest = -MATE_VALUE;
+        let vlBest = -position.MATE_VALUE;
         let mvs = [],
             vls = [];
         if (this.pos.inCheck()) {
@@ -229,7 +232,7 @@ class Search {
             mvs = this.pos.generateMoves(vls);
             shellSort(mvs, vls);
             for (let i = 0; i < mvs.length; i++) {
-                if (vls[i] < 10 || (vls[i] < 20 && isSelfHalf(getDstPosFromMotion(mvs[i]), this.pos.sdPlayer))) {
+                if (vls[i] < 10 || (vls[i] < 20 && position.isSelfHalf(position.getDstPosFromMotion(mvs[i]), this.pos.sdPlayer))) {
                     mvs.length = i;
                     break;
                 }
@@ -249,7 +252,7 @@ class Search {
                 vlAlpha = Math.max(vl, vlAlpha);
             }
         }
-        return vlBest == -MATE_VALUE ? this.pos.mateValue() : vlBest;
+        return vlBest == -position.MATE_VALUE ? this.pos.mateValue() : vlBest;
     }
 
     searchFull(vlAlpha_, vlBeta, depth, noNull) {
@@ -268,7 +271,7 @@ class Search {
         }
         let mvHash = [0];
         vl = this.probeHash(vlAlpha, vlBeta, depth, mvHash);
-        if (vl > -MATE_VALUE) {
+        if (vl > -position.MATE_VALUE) {
             return vl;
         }
         if (this.pos.distance == LIMIT_DEPTH) {
@@ -284,7 +287,7 @@ class Search {
             }
         }
         let hashFlag = HASH_ALPHA;
-        let vlBest = -MATE_VALUE;
+        let vlBest = -position.MATE_VALUE;
         let mvBest = 0;
         let sort = new MoveSort(mvHash[0], this.pos, this.killerTable, this.historyTable);
         let mv;
@@ -293,7 +296,7 @@ class Search {
                 continue;
             }
             let newDepth = this.pos.inCheck() || sort.singleReply ? depth : depth - 1;
-            if (vlBest == -MATE_VALUE) {
+            if (vlBest == -position.MATE_VALUE) {
                 vl = -this.searchFull(-vlBeta, -vlAlpha, newDepth, false);
             } else {
                 vl = -this.searchFull(-vlAlpha - 1, -vlAlpha, newDepth, false);
@@ -316,7 +319,7 @@ class Search {
                 }
             }
         }
-        if (vlBest == -MATE_VALUE) {
+        if (vlBest == -position.MATE_VALUE) {
             return this.pos.mateValue();
         }
         this.recordHash(hashFlag, vlBest, depth, mvBest);
@@ -327,28 +330,28 @@ class Search {
     }
 
     searchRoot(depth) {
-        let vlBest = -MATE_VALUE;
+        let vlBest = -position.MATE_VALUE;
         let sort = new MoveSort(this.mvResult, this.pos, this.killerTable, this.historyTable);
-        let mv;
+        let mv = 0;
         while ((mv = sort.next()) > 0) {
             if (!this.pos.makeMove(mv)) {
                 continue;
             }
             let newDepth = this.pos.inCheck() ? depth : depth - 1;
-            let vl;
-            if (vlBest == -MATE_VALUE) {
-                vl = -this.searchFull(-MATE_VALUE, MATE_VALUE, newDepth, true);
+            let vl = 0;
+            if (vlBest == -position.MATE_VALUE) {
+                vl = -this.searchFull(-position.MATE_VALUE, position.MATE_VALUE, newDepth, true);
             } else {
                 vl = -this.searchFull(-vlBest - 1, -vlBest, newDepth, false);
                 if (vl > vlBest) {
-                    vl = -this.searchFull(-MATE_VALUE, -vlBest, newDepth, true);
+                    vl = -this.searchFull(-position.MATE_VALUE, -vlBest, newDepth, true);
                 }
             }
             this.pos.undoMakeMove();
             if (vl > vlBest) {
                 vlBest = vl;
                 this.mvResult = mv;
-                if (vlBest > -WIN_VALUE && vlBest < WIN_VALUE) {
+                if (vlBest > -position.WIN_VALUE && vlBest < position.WIN_VALUE) {
                     vlBest += Math.floor(Math.random() * RANDOMNESS) -
                         Math.floor(Math.random() * RANDOMNESS);
                     vlBest = (vlBest == this.pos.drawValue() ? vlBest - 1 : vlBest);
@@ -378,9 +381,9 @@ class Search {
     }
 
     /**
-     * @method ∞¥’’÷∏∂®µƒ…Ó∂»∫Õ ±º‰£¨À—À˜◊≈∑®
-     * @param {number} depth À—À˜…Ó∂»
-     * @param {number} millis œﬁ÷∆À—À˜ ±º‰£¨µ•Œªms
+     * @method ÊåâÁÖßÊåáÂÆöÁöÑÊ∑±Â∫¶ÂíåÊó∂Èó¥ÔºåÊêúÁ¥¢ÁùÄÊ≥ï
+     * @param {number} depth ÊêúÁ¥¢Ê∑±Â∫¶
+     * @param {number} millis ÈôêÂà∂ÊêúÁ¥¢Êó∂Èó¥ÔºåÂçï‰Ωçms
      */
     searchMain(depth, millis) {
         this.mvResult = this.pos.bookMove();
@@ -420,10 +423,10 @@ class Search {
             if (this.allMillis > millis) {
                 break;
             }
-            if (vl > WIN_VALUE || vl < -WIN_VALUE) {
+            if (vl > position.WIN_VALUE || vl < -position.WIN_VALUE) {
                 break;
             }
-            if (this.searchUnique(1 - WIN_VALUE, i)) {
+            if (this.searchUnique(1 - position.WIN_VALUE, i)) {
                 break;
             }
         }
@@ -431,7 +434,7 @@ class Search {
     }
 
     /**
-     * @method ªÒ»°√¿∫¡√Îº∆À„µƒΩ⁄µ„ ˝
+     * @method Ëé∑ÂèñÁæéÊØ´ÁßíËÆ°ÁÆóÁöÑËäÇÁÇπÊï∞
      */
     getKNPS() {
         return this.allNodes / this.allMillis;

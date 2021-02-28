@@ -1,16 +1,19 @@
 "use strict";
 
-const STARTUP_FEN = [
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w", //²»ÈÃ×Ó
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKAB1R w", //ÈÃ×óÂí
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/R1BAKAB1R w", //ÈÃË«Âí
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/9/1C5C1/9/RN2K2NR w", //ÈÃ¾Å×Ó
+import * as constant from "./constant.js";
+import {getChessPosX,getChessPosY} from "./position.js";
+
+export const STARTUP_FEN = [
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w", //ä¸è®©å­
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKAB1R w", //è®©å·¦é©¬
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/R1BAKAB1R w", //è®©åŒé©¬
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/9/1C5C1/9/RN2K2NR w", //è®©ä¹å­
 ];
 
 /**
- * ÔÚuiÖĞÌí¼Ó×ßÆå×Å·¨
+ * åœ¨uiä¸­æ·»åŠ èµ°æ£‹ç€æ³•
  */
-function createOption(text, value, ie8) {
+export function createOption(text, value, ie8) {
     let opt = document.createElement("option");
     opt.selected = true;
     opt.value = value;
@@ -23,10 +26,10 @@ function createOption(text, value, ie8) {
 }
 
 /**
- * @method ÏûÏ¢´°
+ * @method æ¶ˆæ¯çª—
  * @param {string} message 
  */
-function alertDelay(message, time) {
+export function alertDelay(message, time) {
     let delay = time || 250;
     setTimeout(function () {
         alert(message);
@@ -34,55 +37,55 @@ function alertDelay(message, time) {
 }
 
 /**
- * @method »ñÈ¡Æå×ÓÔÚ½çÃæÖĞµÄX×ø±ê
+ * @method è·å–æ£‹å­åœ¨ç•Œé¢ä¸­çš„Xåæ ‡
  * @param {number} pos 
  */
-function getUiXFromPos(pos) {
-    return UI_BOARD_LEFT_LINE_POS + (getChessPosX(pos) - 3) * UI_CCHESS_SIZE;
+export function getUiXFromPos(pos) {
+    return constant.UI_BOARD_LEFT_LINE_POS + (getChessPosX(pos) - 3) * constant.UI_CCHESS_SIZE;
 }
 
 /**
- * @method »ñÈ¡Æå×ÓÔÚ½çÃæÖĞµÄY×ø±ê
+ * @method è·å–æ£‹å­åœ¨ç•Œé¢ä¸­çš„Yåæ ‡
  * @param {number} pos 
  */
-function getUiYFromPos(pos) {
-    return UI_BOARD_TOP_LINE_POS + (getChessPosY(pos) - 3) * UI_CCHESS_SIZE;
+export function getUiYFromPos(pos) {
+    return constant.UI_BOARD_TOP_LINE_POS + (getChessPosY(pos) - 3) * constant.UI_CCHESS_SIZE;
 }
 
 /**
- * @method ¼ÆËã¶¯»­Ã¿´ÎµÄÆ«ÒÆÁ¿
+ * @method è®¡ç®—åŠ¨ç”»æ¯æ¬¡çš„åç§»é‡
  * @param {number} src 
  * @param {number} dst 
- * @param {number} step ²½³¤,Ô½À´Ô½Ğ¡¾ÍĞÎ³ÉÁË´Ósrcµ½dstµÄ¶¯»­
+ * @param {number} step æ­¥é•¿,è¶Šæ¥è¶Šå°å°±å½¢æˆäº†ä»srcåˆ°dstçš„åŠ¨ç”»
  */
-function getMotionPixelByStep(src, dst, step) {
-    return Math.floor((src * step + dst * (MAX_STEP - step)) / MAX_STEP + 0.5) + "px";
+export function getMotionPixelByStep(src, dst, step) {
+    return Math.floor((src * step + dst * (constant.MAX_STEP - step)) / constant.MAX_STEP + 0.5) + "px";
 }
 
-class UIBoard {
+export class UIBoard {
     constructor(game, container, images) {
         this.game_ = game;
         this.container_ = container;
         this.images_ = images;
 
-        //ÉèÖÃ±³¾°Í¼Æ¬
+        //è®¾ç½®èƒŒæ™¯å›¾ç‰‡
         let style = container.style;
         style.position = "relative";
-        style.width = UI_BOARD_WIDTH + "px";
-        style.height = UI_BOARD_HEIGHT + "px";
+        style.width = constant.UI_BOARD_WIDTH + "px";
+        style.height = constant.UI_BOARD_HEIGHT + "px";
         style.background = "url(" + images + "board.jpg)";
 
-        //Ë¼¿¼»º³åÍ¼
+        //æ€è€ƒç¼“å†²å›¾
         this.thinking = document.createElement("img");
         this.thinking.src = images + "thinking.gif";
         let imgStyle = this.thinking.style;
         imgStyle.visibility = "hidden";
         imgStyle.position = "absolute";
-        imgStyle.left = UI_THINKING_POS_LEFT + "px";
-        imgStyle.top = UI_THINKING_POS_TOP + "px";
+        imgStyle.left = constant.UI_THINKING_POS_LEFT + "px";
+        imgStyle.top = constant.UI_THINKING_POS_TOP + "px";
         container.appendChild(this.thinking);
 
-        //Æå×Ó
+        //æ£‹å­
         this.imgSquares = [];
 
         /*
@@ -119,7 +122,7 @@ class UIBoard {
     }
 
     /**
-     * @method Ë¢ĞÂÆåÅÌ
+     * @method åˆ·æ–°æ£‹ç›˜
      */
     flushBoard() {
         for (let sq = 0; sq < 256; sq++) {

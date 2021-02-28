@@ -1,15 +1,15 @@
 /**
- * Ò»Ğ©ÓëÒµÎñÎŞ¹ØµÄ¹¤¾ßº¯Êı
+ * ä¸€äº›ä¸ä¸šåŠ¡æ— å…³çš„å·¥å…·å‡½æ•°
  */
 
 "use strict";
 
 /**
- * @method ¶ş²æËÑË÷
- * @param {array} vlss ÒªËÑË÷µÄÊı×é
- * @param {number} vl Ä¿±êÔªËØ
+ * @method äºŒå‰æœç´¢
+ * @param {array} vlss è¦æœç´¢çš„æ•°ç»„
+ * @param {number} vl ç›®æ ‡å…ƒç´ 
  */
-function binarySearch(vlss, vl) {
+export function binarySearch(vlss, vl) {
     let low = 0;
     let high = vlss.length - 1;
     while (low <= high) {
@@ -25,13 +25,13 @@ function binarySearch(vlss, vl) {
     return -1;
 }
 
-const SHELL_STEP = [0, 1, 4, 13, 40, 121, 364, 1093]; //²½³¤
+const SHELL_STEP = [0, 1, 4, 13, 40, 121, 364, 1093]; //æ­¥é•¿
 /**
- * @method Ï£¶ûÅÅĞò
- * @description Ò»´Î¶ÔÁ½¸öÊı×éÍ¬Ê±ÅÅĞò
+ * @method å¸Œå°”æ’åº
+ * @description ä¸€æ¬¡å¯¹ä¸¤ä¸ªæ•°ç»„åŒæ—¶æ’åº
  */
-function shellSort(mvs, vls) {
-    //Ñ°ÕÒÒ»¸ö¾¡Á¿´óµÄ²½³¤
+export function shellSort(mvs, vls) {
+    //å¯»æ‰¾ä¸€ä¸ªå°½é‡å¤§çš„æ­¥é•¿
     let stepLevel = 1;
     while (SHELL_STEP[stepLevel] < mvs.length) {
         stepLevel++;
@@ -57,37 +57,37 @@ function shellSort(mvs, vls) {
 }
 
 /**
- * @method ´ÓASCIIÊıÖµÖĞ»ñÈ¡¶ÔÓ¦µÄ×Ö·û
- * @param {number} code ASCIIÖµ 
+ * @method ä»ASCIIæ•°å€¼ä¸­è·å–å¯¹åº”çš„å­—ç¬¦
+ * @param {number} code ASCIIå€¼ 
  */
-function getCharFromByteCode(code) {
+export function getCharFromByteCode(code) {
     return String.fromCharCode(code);
 }
 
 /**
- * @method »ñÈ¡×Ö·û´®ÖĞÊ××Ö·ûµÄASCIIÖµ
- * @param {string} char ×Ö·û´® 
+ * @method è·å–å­—ç¬¦ä¸²ä¸­é¦–å­—ç¬¦çš„ASCIIå€¼
+ * @param {string} char å­—ç¬¦ä¸² 
  */
-function getCodeFromChar(char) {
+export function getCodeFromChar(char) {
     return char.charCodeAt(0);
 }
 
 /**
  * @class RC4(Rivest Cipher 4)
- * @constructor ²ÎÊıÎªÃÜÔ¿
- * @classdesc ¶Ô³Æ¼ÓÃÜËã·¨
+ * @constructor å‚æ•°ä¸ºå¯†é’¥
+ * @classdesc å¯¹ç§°åŠ å¯†ç®—æ³•
  */
-class RC4 {
+export class RC4 {
     constructor(key) {
         this.x = this.y = 0;
         this.state = [];
 
-        //[0 .. 255]ÖÖ×´Ì¬
+        //[0 .. 255]ç§çŠ¶æ€
         for (let i = 0; i < 256; i++) {
             this.state.push(i);
         }
 
-        //³õÊ¼ÅÅÁĞ
+        //åˆå§‹æ’åˆ—
         let j = 0;
         for (let i = 0; i < 256; i++) {
             j = (j + this.state[i] + key[i % key.length]) & 0xff;
@@ -101,9 +101,9 @@ class RC4 {
         this.state[j] = t;
     }
 
-    // ²úÉúÃÜÔ¿Á÷
-    // ÃÜÎÄµÚi×Ö½Ú=Ã÷ÎÄµÚi×Ö½Ú^ÃÜÔ¿Á÷µÚi×Ö½Ú
-    // Ã÷ÎÄ = ÃÜÎÄ^ÃÜÔ¿Á÷
+    // äº§ç”Ÿå¯†é’¥æµ
+    // å¯†æ–‡ç¬¬iå­—èŠ‚=æ˜æ–‡ç¬¬iå­—èŠ‚^å¯†é’¥æµç¬¬iå­—èŠ‚
+    // æ˜æ–‡ = å¯†æ–‡^å¯†é’¥æµ
     nextByte() {
         this.x = (this.x + 1) & 0xff;
         this.y = (this.y + this.state[this.x]) & 0xff;

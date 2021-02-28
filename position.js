@@ -22,50 +22,54 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 "use strict";
 
-//todo ÔİÊ±»¹²»ÖªµÀ¸ÉÉ¶µÄ
-const MATE_VALUE = 10000;
-const BAN_VALUE = MATE_VALUE - 100;
-const WIN_VALUE = MATE_VALUE - 200;
-const NULL_SAFE_MARGIN = 400;
-const NULL_OKAY_MARGIN = 200;
-const DRAW_VALUE = 20;
-const ADVANCED_VALUE = 3;
+import { RC4, getCharFromByteCode, getCodeFromChar,binarySearch} from "./util.js";
+import * as constant from "./constant.js";
+import {BOOK_DAT} from "./book.js";
+
+//todo æš‚æ—¶è¿˜ä¸çŸ¥é“å¹²å•¥çš„
+export const MATE_VALUE = 10000;
+export const BAN_VALUE = MATE_VALUE - 100;
+export const WIN_VALUE = MATE_VALUE - 200;
+export const NULL_SAFE_MARGIN = 400;
+export const NULL_OKAY_MARGIN = 200;
+export const DRAW_VALUE = 20;
+export const ADVANCED_VALUE = 3;
 
 /**
- * @method Æå×ÓÊÇ·ñÔÚÆåÅÌÉÏ
- * @param {number} pos Æå×ÓµÄ×ø±ê
+ * @method æ£‹å­æ˜¯å¦åœ¨æ£‹ç›˜ä¸Š
+ * @param {number} pos æ£‹å­çš„åæ ‡
  */
-function isChessOnBoard(pos) {
-    return IN_BOARD_[pos] != 0;
+export function isChessOnBoard(pos) {
+    return constant.IN_BOARD_[pos] != 0;
 }
 
 /**
- * @method Æå×ÓÊÇ·ñÔÚ¾Å¹¬ÄÚ
- * @param {number} pos Æå×ÓµÄ×ø±ê
+ * @method æ£‹å­æ˜¯å¦åœ¨ä¹å®«å†…
+ * @param {number} pos æ£‹å­çš„åæ ‡
  */
 function isInFort(pos) {
-    return IN_FORT_[pos] != 0;
+    return constant.IN_FORT_[pos] != 0;
 }
 
 /**
- * @method »ñÈ¡×ø±êÖĞµÄĞĞÖµY
- * @param {number} pos Æå×Ó×ø±êY
- * @description ×ø±ê±íÊ¾·½Ê½ YX(¸ß4Î»Î»ĞĞÖµY µÍ4Î»ÎªÁĞÖµX)
+ * @method è·å–åæ ‡ä¸­çš„åˆ—å€¼X
+ * @param {number} pos æ£‹å­åæ ‡X
  */
-function getChessPosY(pos) {
-    return pos >> 4;
-}
-
-/**
- * @method »ñÈ¡×ø±êÖĞµÄÁĞÖµX
- * @param {number} pos Æå×Ó×ø±êX
- */
-function getChessPosX(pos) {
+export function getChessPosX(pos) {
     return pos & 15;
 }
 
 /**
- * @method ×éºÏX¡¢YÎªÒ»¸öÖµ£¬×÷ÎªÊı×éµÄ·ÃÎÊÏÂ±ê
+ * @method è·å–åæ ‡ä¸­çš„è¡Œå€¼Y
+ * @param {number} pos æ£‹å­åæ ‡Y
+ * @description åæ ‡è¡¨ç¤ºæ–¹å¼ YX(é«˜4ä½ä½è¡Œå€¼Y ä½4ä½ä¸ºåˆ—å€¼X)
+ */
+export function getChessPosY(pos) {
+    return pos >> 4;
+}
+
+/**
+ * @method ç»„åˆXã€Yä¸ºä¸€ä¸ªå€¼ï¼Œä½œä¸ºæ•°ç»„çš„è®¿é—®ä¸‹æ ‡
  * @param {number} x 
  * @param {number} y 
  */
@@ -74,15 +78,15 @@ function MakeCoordWithXY(x, y) {
 }
 
 /**
- * @method ·­×ª×ø±ê
+ * @method ç¿»è½¬åæ ‡
  * @param {number} sq 
  */
-function flipPos(pos) {
+export function flipPos(pos) {
     return 254 - pos;
 }
 
 /**
- * @method ·­×ªX×ø±ê
+ * @method ç¿»è½¬Xåæ ‡
  * @param {number} x 
  */
 function flipPosX(x) {
@@ -90,7 +94,7 @@ function flipPosX(x) {
 }
 
 /**
- * @method ·­×ªY×ø±ê
+ * @method ç¿»è½¬Yåæ ‡
  * @param {number} y 
  */
 function flipPosY(y) {
@@ -98,7 +102,7 @@ function flipPosY(y) {
 }
 
 /**
- * @method »ñÈ¡×óÓÒ¾µÏñÎ»ÖÃ
+ * @method è·å–å·¦å³é•œåƒä½ç½®
  * @param {number} pos 
  */
 function getMirrorPosByX(pos) {
@@ -106,165 +110,165 @@ function getMirrorPosByX(pos) {
 }
 
 /**
- * @method ×ä(±ø) Ç°½øÒ»²½ºóµÄ×ø±ê
- * @param {number} pos Æå×Ó×ø±ê
- * @param {number} side Æå×ÓÊôÓÚÄÄÒ»·½
- * @description 0-ºÚ·½, 1-ºì
+ * @method å’(å…µ) å‰è¿›ä¸€æ­¥åçš„åæ ‡
+ * @param {number} pos æ£‹å­åæ ‡
+ * @param {number} side æ£‹å­å±äºå“ªä¸€æ–¹
+ * @description 0-é»‘æ–¹, 1-çº¢
  */
 function getForwardPosForPawn(pos, side) {
     return pos - 16 + (side << 5);
 }
 
 /**
- * @method ÅĞ¶ÏÀÏ½«ÊÇ·ñºÏ·¨×ßÆå
- * @param {number} posSrc Ô­Î»ÖÃ 
- * @param {number} posDst Ä¿µÄÎ»ÖÃ
+ * @method åˆ¤æ–­è€å°†æ˜¯å¦åˆæ³•èµ°æ£‹
+ * @param {number} posSrc åŸä½ç½® 
+ * @param {number} posDst ç›®çš„ä½ç½®
  */
 function isKingSpan(posSrc, posDst) {
-    return LEGAL_SPAN[posDst - posSrc + 256] == 1;
+    return constant.LEGAL_SPAN[posDst - posSrc + 256] == 1;
 }
 
 /**
  * 
- * @method ÅĞ¶ÏÊ¿ÊÇ·ñºÏ·¨×ßÆå
- * @param {number} posSrc Ô­Î»ÖÃ 
- * @param {number} posDst Ä¿µÄÎ»ÖÃ 
+ * @method åˆ¤æ–­å£«æ˜¯å¦åˆæ³•èµ°æ£‹
+ * @param {number} posSrc åŸä½ç½® 
+ * @param {number} posDst ç›®çš„ä½ç½® 
  */
 function isAdvisorSpan(posSrc, posDst) {
-    return LEGAL_SPAN[posDst - posSrc + 256] == 2;
+    return constant.LEGAL_SPAN[posDst - posSrc + 256] == 2;
 }
 
 /**
  * 
- * @method ÅĞ¶ÏÏàÊÇ·ñºÏ·¨×ßÆå
- * @param {number} posSrc Ô­Î»ÖÃ 
- * @param {number} posDst Ä¿µÄÎ»ÖÃ 
+ * @method åˆ¤æ–­ç›¸æ˜¯å¦åˆæ³•èµ°æ£‹
+ * @param {number} posSrc åŸä½ç½® 
+ * @param {number} posDst ç›®çš„ä½ç½® 
  */
 function isBishopSpan(posSrc, posDst) {
-    return LEGAL_SPAN[posDst - posSrc + 256] == 3;
+    return constant.LEGAL_SPAN[posDst - posSrc + 256] == 3;
 }
 
 /**
- * @method ÅĞ¶ÏÊÇ·ñ´æÔÚÏóÑÛ
- * @param {number} posSrc Ô­Î»ÖÃ
- * @param {number} posDst Ä¿µÄÎ»ÖÃ
+ * @method åˆ¤æ–­æ˜¯å¦å­˜åœ¨è±¡çœ¼
+ * @param {number} posSrc åŸä½ç½®
+ * @param {number} posDst ç›®çš„ä½ç½®
  */
 function isExistBishopPin(posSrc, posDst) {
     return (posSrc + posDst) >> 1;
 }
 
 /**
- * @method ÅĞ¶ÏÊÇ·ñ´æÔÚÂí½Å
- * @param {number} posSrc Ô­Î»ÖÃ
- * @param {number} posDst Ä¿µÄÎ»ÖÃ
+ * @method åˆ¤æ–­æ˜¯å¦å­˜åœ¨é©¬è„š
+ * @param {number} posSrc åŸä½ç½®
+ * @param {number} posDst ç›®çš„ä½ç½®
  */
 function isExistKnightPin(posSrc, posDst) {
-    return posSrc + KNIGHT_PIN_[posDst - posSrc + 256];
+    return posSrc + constant.KNIGHT_PIN_[posDst - posSrc + 256];
 }
 
 /**
- * @method ÅĞ¶ÏÆå×ÓÊÇ·ñÔÚ¼º·½ÕâÒ»²à
- * @param {number} pos Æå×Ó×ø±ê
- * @param {number} side Æå×ÓÊôÓÚÄÄÒ»·½
- * @description 0-ºÚ·½, 1-ºì
+ * @method åˆ¤æ–­æ£‹å­æ˜¯å¦åœ¨å·±æ–¹è¿™ä¸€ä¾§
+ * @param {number} pos æ£‹å­åæ ‡
+ * @param {number} side æ£‹å­å±äºå“ªä¸€æ–¹
+ * @description 0-é»‘æ–¹, 1-çº¢
  */
-function isSelfHalf(pos, side) {
+export function isSelfHalf(pos, side) {
     return (pos & 0x80) != (side << 7);
 }
 
 /**
- * @method ÅĞ¶ÏÆå×ÓÊÇ·ñÔÚµĞ·½ÕâÒ»²à
- * @param {number} pos Æå×Ó×ø±ê
- * @param {number} side Æå×ÓÊôÓÚÄÄÒ»·½
- * @description 0-ºÚ·½, 1-ºì
+ * @method åˆ¤æ–­æ£‹å­æ˜¯å¦åœ¨æ•Œæ–¹è¿™ä¸€ä¾§
+ * @param {number} pos æ£‹å­åæ ‡
+ * @param {number} side æ£‹å­å±äºå“ªä¸€æ–¹
+ * @description 0-é»‘æ–¹, 1-çº¢
  */
 function isEnemyHalf(pos, side) {
     return (pos & 0x80) == (side << 7);
 }
 
 /**
- * @method ÅĞ¶Ï×ßÆåÇ°ºóÊÇ·ñÔÚÍ¬Ò»²à
- * @param {number} posSrc Ô­Î»ÖÃ
- * @param {number} posDst Ä¿µÄÎ»ÖÃ
+ * @method åˆ¤æ–­èµ°æ£‹å‰åæ˜¯å¦åœ¨åŒä¸€ä¾§
+ * @param {number} posSrc åŸä½ç½®
+ * @param {number} posDst ç›®çš„ä½ç½®
  */
 function isSameHalf(posSrc, posDst) {
     return ((posSrc ^ posDst) & 0x80) == 0;
 }
 
 /**
- * @method ÅĞ¶Ï×ßÆåÇ°ºóÊÇ·ñÔÚÍ¬Ò»ĞĞ
- * @param {number} posSrc Ô­Î»ÖÃ
- * @param {number} posDst Ä¿µÄÎ»ÖÃ
+ * @method åˆ¤æ–­èµ°æ£‹å‰åæ˜¯å¦åœ¨åŒä¸€è¡Œ
+ * @param {number} posSrc åŸä½ç½®
+ * @param {number} posDst ç›®çš„ä½ç½®
  */
 function isSamePoxY(posSrc, posDst) {
     return ((posSrc ^ posDst) & 0xf0) == 0;
 }
 
 /**
- * @method ÅĞ¶Ï×ßÆåÇ°ºóÊÇ·ñÔÚÍ¬Ò»ÁĞ
- * @param {number} posSrc Ô­Î»ÖÃ
- * @param {number} posDst Ä¿µÄÎ»ÖÃ
+ * @method åˆ¤æ–­èµ°æ£‹å‰åæ˜¯å¦åœ¨åŒä¸€åˆ—
+ * @param {number} posSrc åŸä½ç½®
+ * @param {number} posDst ç›®çš„ä½ç½®
  */
 function isSamePoxX(posSrc, posDst) {
     return ((posSrc ^ posDst) & 0x0f) == 0;
 }
 
 /**
- * @method ¼º·½±êÊ¶
+ * @method å·±æ–¹æ ‡è¯†
  * @param {number} side
- * @description 0-ºÚ·½, 1-ºì
+ * @description 0-é»‘æ–¹, 1-çº¢
  */
-function getSelfSideTag(side) {
+export function getSelfSideTag(side) {
     return 8 + (side << 3);
 }
 
 /**
- * @method µĞ·½±êÊ¶
+ * @method æ•Œæ–¹æ ‡è¯†
  * @param {number} side 
- * @description 0-ºÚ·½, 1-ºì
+ * @description 0-é»‘æ–¹, 1-çº¢
  */
-function getEnemySideTag(side) {
+export function getEnemySideTag(side) {
     return 16 - (side << 3);
 }
 
 /**
- * @method ´Ó×ßÆå×Å·¨ÖĞ»ñÈ¡Ô­Î»ÖÃ
+ * @method ä»èµ°æ£‹ç€æ³•ä¸­è·å–åŸä½ç½®
  * @param {number} motion 
- * @description motion(¸ß8Î»±êÊ¶Ä¿µÄÎ»ÖÃ£¬µÍ8Î»±êÊ¶Ô­Î»ÖÃ) => dest << 8 + src
+ * @description motion(é«˜8ä½æ ‡è¯†ç›®çš„ä½ç½®ï¼Œä½8ä½æ ‡è¯†åŸä½ç½®) => dest << 8 + src
  */
-function getSrcPosFromMotion(motion) {
+export function getSrcPosFromMotion(motion) {
     return motion & 255;
 }
 
 /**
- * @method ´Ó×ßÆå×Å·¨ÖĞ»ñÈ¡Ä¿µÄÎ»ÖÃ
+ * @method ä»èµ°æ£‹ç€æ³•ä¸­è·å–ç›®çš„ä½ç½®
  * @param {number} motion 
- * @description motion(¸ß8Î»±êÊ¶Ä¿µÄÎ»ÖÃ£¬µÍ8Î»±êÊ¶Ô­Î»ÖÃ) => dest << 8 + src
+ * @description motion(é«˜8ä½æ ‡è¯†ç›®çš„ä½ç½®ï¼Œä½8ä½æ ‡è¯†åŸä½ç½®) => dest << 8 + src
  */
-function getDstPosFromMotion(motion) {
+export function getDstPosFromMotion(motion) {
     return motion >> 8;
 }
 
 /**
- * @method ½«Ô­Î»ÖÃºÍÄ¿µÄÎ»ÖÃ×éºÏ³É×Å·¨
+ * @method å°†åŸä½ç½®å’Œç›®çš„ä½ç½®ç»„åˆæˆç€æ³•
  * @param {number} posSrc 
  * @param {number} posDst 
  */
-function makeMotionBySrcDst(posSrc, posDst) {
+export function makeMotionBySrcDst(posSrc, posDst) {
     return posSrc + (posDst << 8);
 }
 
 /**
- * @method »ñÈ¡¾µÏñ×Å·¨
+ * @method è·å–é•œåƒç€æ³•
  * @param {number} motion 
  */
 function getMirrorMotionByX(motion) {
     return makeMotionBySrcDst(getMirrorPosByX(getSrcPosFromMotion(motion)), getMirrorPosByX(getDstPosFromMotion(motion)));
 }
 
-//todo ²»Ì«¶®
+//todo ä¸å¤ªæ‡‚
 function MVV_LVA(pc, lva) {
-    return MVV_VALUE[pc & 7] - lva;
+    return constant.MVV_VALUE[pc & 7] - lva;
 }
 
 const rc4 = new RC4([0]);
@@ -274,9 +278,9 @@ rc4.nextLong();
 let PreGen_zobristLockPlayer = rc4.nextLong();
 
 /**
- * Zobrist ¹şÏ£ÊÇÒÔAlbert L.ZobristµÄÃû×ÖÃüÃû¡£ËüÊÇÒ»ÖÖÌØÊâµÄÖÃ»»±í¡£
- * ÊÇÒ»ÖÖ×¨ÃÅÕë¶ÔÆåÀàÓÎÏ·¶øÌá³öÀ´µÄ±àÂë·½Ê½£¬ÅĞ¶ÏÀúÊ·¾ÖÃæÊÇ·ñ´æÔÚµÄËã·¨¡£
- * °´Î»Òì»ò
+ * Zobrist å“ˆå¸Œæ˜¯ä»¥Albert L.Zobristçš„åå­—å‘½åã€‚å®ƒæ˜¯ä¸€ç§ç‰¹æ®Šçš„ç½®æ¢è¡¨ã€‚
+ * æ˜¯ä¸€ç§ä¸“é—¨é’ˆå¯¹æ£‹ç±»æ¸¸æˆè€Œæå‡ºæ¥çš„ç¼–ç æ–¹å¼ï¼Œåˆ¤æ–­å†å²å±€é¢æ˜¯å¦å­˜åœ¨çš„ç®—æ³•ã€‚
+ * æŒ‰ä½å¼‚æˆ–
  */
 let PreGen_zobristKeyTable = [],
     PreGen_zobristLockTable = [];
@@ -293,13 +297,13 @@ for (let i = 0; i < 14; i++) {
     PreGen_zobristLockTable.push(locks);
 }
 
-class Position {
+export class Position {
     constructor() {
         this.sdPlayer = 0;
         this.squares = [];
         this.zobristKey = this.zobristLock = 0;
         this.vlWhite = this.vlBlack = 0;
-        this.motionList = [0]; //×ßÆåÁĞ±í
+        this.motionList = [0]; //èµ°æ£‹åˆ—è¡¨
         this.pcList = [0];
         this.keyList = [0];
         this.chkList = [];
@@ -307,7 +311,34 @@ class Position {
     }
 
     /**
-     * @method Çå¿ÕÆåÅÌ
+     * @method å°†å­—ç¬¦è½¬æ¢æˆå¯¹åº”çš„æ£‹å­æ ‡è¯†
+     * @param {char} char å­—ç¬¦å€¼
+     */
+    getChessIdFromChar(char) {
+        switch (char) {
+            case "K":
+                return constant.PIECE_KING;
+            case "A":
+                return constant.PIECE_ADVISOR;
+            case "B":
+            case "E":
+                return constant.PIECE_BISHOP;
+            case "H":
+            case "N":
+                return constant.PIECE_KNIGHT;
+            case "R":
+                return constant.PIECE_ROOK;
+            case "C":
+                return constant.PIECE_CANNON;
+            case "P":
+                return constant.PIECE_PAWN;
+            default:
+                return constant.PIECE_UNKNOWN;
+        }
+    }
+
+    /**
+     * @method æ¸…ç©ºæ£‹ç›˜
      */
     clearBoard() {
         this.sdPlayer = 0;
@@ -320,10 +351,10 @@ class Position {
     }
 
     /**
-     * ĞéÄâ½á¹¹
+     * è™šæ‹Ÿç»“æ„
      */
     setIrrev() {
-        this.motionList = [0]; //×ßÆåÁĞ±í
+        this.motionList = [0]; //èµ°æ£‹åˆ—è¡¨
         this.pcList = [0];
         this.keyList = [0];
         this.chkList = [this.checked()];
@@ -332,21 +363,21 @@ class Position {
 
     /**
      * 
-     * @param {number} sq Æå×Ó×ø±ê
+     * @param {number} sq æ£‹å­åæ ‡
      * @param {number} pc play color
-     * @param {boolean} bDel ±»É¾³ı
+     * @param {boolean} bDel è¢«åˆ é™¤
      */
     addPiece(sq, pc, bDel) {
         let pcAdjust;
         this.squares[sq] = bDel ? 0 : pc;
         if (pc < 16) {
             pcAdjust = pc - 8;
-            this.vlWhite += bDel ? -chessDynamicValue[pcAdjust][sq] :
-                chessDynamicValue[pcAdjust][sq];
+            this.vlWhite += bDel ? -constant.chessDynamicValue[pcAdjust][sq] :
+                constant.chessDynamicValue[pcAdjust][sq];
         } else {
             pcAdjust = pc - 16;
-            this.vlBlack += bDel ? -chessDynamicValue[pcAdjust][flipPos(sq)] :
-                chessDynamicValue[pcAdjust][flipPos(sq)];
+            this.vlBlack += bDel ? -constant.chessDynamicValue[pcAdjust][flipPos(sq)] :
+                constant.chessDynamicValue[pcAdjust][flipPos(sq)];
             pcAdjust += 7;
         }
         this.zobristKey ^= PreGen_zobristKeyTable[pcAdjust][sq];
@@ -354,8 +385,8 @@ class Position {
     }
 
     /**
-     * @method ×ß¶¯Æå×Ó
-     * @param {number} motion ×ßÆå×Å·¨ 
+     * @method èµ°åŠ¨æ£‹å­
+     * @param {number} motion èµ°æ£‹ç€æ³• 
      */
     movePiece(motion) {
         let posSrc = getSrcPosFromMotion(motion);
@@ -363,11 +394,11 @@ class Position {
         let pc = this.squares[posDst];
         this.pcList.push(pc);
         if (pc > 0) {
-            this.addPiece(posDst, pc, DEL_PIECE);
+            this.addPiece(posDst, pc, constant.DEL_PIECE);
         }
         pc = this.squares[posSrc];
-        this.addPiece(posSrc, pc, DEL_PIECE);
-        this.addPiece(posDst, pc, ADD_PIECE);
+        this.addPiece(posSrc, pc, constant.DEL_PIECE);
+        this.addPiece(posDst, pc, constant.ADD_PIECE);
         this.motionList.push(motion);
     }
 
@@ -376,11 +407,11 @@ class Position {
         let posSrc = getSrcPosFromMotion(mv);
         let posDst = getDstPosFromMotion(mv);
         let pc = this.squares[posDst];
-        this.addPiece(posDst, pc, DEL_PIECE);
-        this.addPiece(posSrc, pc, ADD_PIECE);
+        this.addPiece(posDst, pc, constant.DEL_PIECE);
+        this.addPiece(posSrc, pc, constant.ADD_PIECE);
         pc = this.pcList.pop();
         if (pc > 0) {
-            this.addPiece(posDst, pc, ADD_PIECE);
+            this.addPiece(posDst, pc, constant.ADD_PIECE);
         }
     }
 
@@ -432,8 +463,8 @@ class Position {
 
     fromFen(fen) {
         this.clearBoard();
-        let y = RANK_TOP;
-        let x = FILE_LEFT;
+        let y = constant.RANK_TOP;
+        let x = constant.FILE_LEFT;
         let index = 0;
         if (index == fen.length) {
             this.setIrrev();
@@ -442,20 +473,20 @@ class Position {
         let c = fen.charAt(index);
         while (c != " ") {
             if (c == "/") {
-                x = FILE_LEFT;
+                x = constant.FILE_LEFT;
                 y++;
-                if (y > RANK_BOTTOM) {
+                if (y > constant.RANK_BOTTOM) {
                     break;
                 }
             } else if (c >= "1" && c <= "9") {
                 for (let k = 0; k < (getCodeFromChar(c) - getCodeFromChar("0")); k++) {
-                    if (x >= FILE_RIGHT) {
+                    if (x >= constant.FILE_RIGHT) {
                         break;
                     }
                     x++;
                 }
             } else if (c >= "A" && c <= "Z") {
-                if (x <= FILE_RIGHT) {
+                if (x <= constant.FILE_RIGHT) {
                     let pt = this.getChessIdFromChar(c);
                     if (pt >= 0) {
                         this.addPiece(MakeCoordWithXY(x, y), pt + 8);
@@ -463,7 +494,7 @@ class Position {
                     x++;
                 }
             } else if (c >= "a" && c <= "z") {
-                if (x <= FILE_RIGHT) {
+                if (x <= constant.FILE_RIGHT) {
                     let pt = this.getChessIdFromChar(getCharFromByteCode(getCodeFromChar(c) + getCodeFromChar("A") - getCodeFromChar("a")));
                     if (pt >= 0) {
                         this.addPiece(MakeCoordWithXY(x, y), pt + 16);
@@ -491,16 +522,16 @@ class Position {
 
     toFen() {
         let fen = "";
-        for (let y = RANK_TOP; y <= RANK_BOTTOM; y++) {
+        for (let y = constant.RANK_TOP; y <= constant.RANK_BOTTOM; y++) {
             let k = 0;
-            for (let x = FILE_LEFT; x <= FILE_RIGHT; x++) {
+            for (let x = constant.FILE_LEFT; x <= constant.FILE_RIGHT; x++) {
                 let pc = this.squares[MakeCoordWithXY(x, y)];
                 if (pc > 0) {
                     if (k > 0) {
                         fen += getCharFromByteCode(getCodeFromChar("0") + k);
                         k = 0;
                     }
-                    fen += FEN_PIECE.charAt(pc);
+                    fen += constant.FEN_PIECE.charAt(pc);
                 } else {
                     k++;
                 }
@@ -524,9 +555,9 @@ class Position {
                 continue;
             }
             switch (pcSrc - pcSelfSide) {
-                case PIECE_KING:
+                case constant.PIECE_KING:
                     for (let i = 0; i < 4; i++) {
-                        let posDst = posSrc + KING_DELTA[i];
+                        let posDst = posSrc + constant.KING_DELTA[i];
                         if (!isInFort(posDst)) {
                             continue;
                         }
@@ -541,9 +572,9 @@ class Position {
                         }
                     }
                     break;
-                case PIECE_ADVISOR:
+                case constant.PIECE_ADVISOR:
                     for (let i = 0; i < 4; i++) {
-                        let posDst = posSrc + ADVISOR_DELTA[i];
+                        let posDst = posSrc + constant.ADVISOR_DELTA[i];
                         if (!isInFort(posDst)) {
                             continue;
                         }
@@ -558,14 +589,14 @@ class Position {
                         }
                     }
                     break;
-                case PIECE_BISHOP:
+                case constant.PIECE_BISHOP:
                     for (let i = 0; i < 4; i++) {
-                        let posDst = posSrc + ADVISOR_DELTA[i];
+                        let posDst = posSrc + constant.ADVISOR_DELTA[i];
                         if (!(isChessOnBoard(posDst) && isSelfHalf(posDst, this.sdPlayer) &&
-                                this.squares[posDst] == 0)) {
+                            this.squares[posDst] == 0)) {
                             continue;
                         }
-                        posDst += ADVISOR_DELTA[i];
+                        posDst += constant.ADVISOR_DELTA[i];
                         let pcDst = this.squares[posDst];
                         if (vls == null) {
                             if ((pcDst & pcSelfSide) == 0) {
@@ -577,14 +608,14 @@ class Position {
                         }
                     }
                     break;
-                case PIECE_KNIGHT:
+                case constant.PIECE_KNIGHT:
                     for (let i = 0; i < 4; i++) {
-                        let posDst = posSrc + KING_DELTA[i];
+                        let posDst = posSrc + constant.KING_DELTA[i];
                         if (this.squares[posDst] > 0) {
                             continue;
                         }
                         for (let j = 0; j < 2; j++) {
-                            posDst = posSrc + KNIGHT_DELTA[i][j];
+                            posDst = posSrc + constant.KNIGHT_DELTA[i][j];
                             if (!isChessOnBoard(posDst)) {
                                 continue;
                             }
@@ -600,9 +631,9 @@ class Position {
                         }
                     }
                     break;
-                case PIECE_ROOK:
+                case constant.PIECE_ROOK:
                     for (let i = 0; i < 4; i++) {
-                        let delta = KING_DELTA[i];
+                        let delta = constant.KING_DELTA[i];
                         let posDst = posSrc + delta;
                         while (isChessOnBoard(posDst)) {
                             let pcDst = this.squares[posDst];
@@ -623,9 +654,9 @@ class Position {
                         }
                     }
                     break;
-                case PIECE_CANNON:
+                case constant.PIECE_CANNON:
                     for (let i = 0; i < 4; i++) {
-                        let delta = KING_DELTA[i];
+                        let delta = constant.KING_DELTA[i];
                         let posDst = posSrc + delta;
                         while (isChessOnBoard(posDst)) {
                             let pcDst = this.squares[posDst];
@@ -654,7 +685,7 @@ class Position {
                         }
                     }
                     break;
-                case PIECE_PAWN:
+                case constant.PIECE_PAWN:
                     let posDst = getForwardPosForPawn(posSrc, this.sdPlayer);
                     if (isChessOnBoard(posDst)) {
                         let pcDst = this.squares[posDst];
@@ -704,19 +735,19 @@ class Position {
         }
 
         switch (pcSrc - pcSelfSide) {
-            case PIECE_KING:
+            case constant.PIECE_KING:
                 return isInFort(posDst) && isKingSpan(posSrc, posDst);
-            case PIECE_ADVISOR:
+            case constant.PIECE_ADVISOR:
                 return isInFort(posDst) && isAdvisorSpan(posSrc, posDst);
-            case PIECE_BISHOP:
+            case constant.PIECE_BISHOP:
                 return isSameHalf(posSrc, posDst) && isBishopSpan(posSrc, posDst) &&
                     this.squares[isExistBishopPin(posSrc, posDst)] == 0;
-            case PIECE_KNIGHT: {
+            case constant.PIECE_KNIGHT: {
                 let sqPin = isExistKnightPin(posSrc, posDst);
                 return sqPin != posSrc && this.squares[sqPin] == 0;
             }
-            case PIECE_ROOK:
-            case PIECE_CANNON: {
+            case constant.PIECE_ROOK:
+            case constant.PIECE_CANNON: {
                 let delta;
                 if (isSamePoxY(posSrc, posDst)) {
                     delta = (posDst < posSrc ? -1 : 1);
@@ -730,9 +761,9 @@ class Position {
                     sqPin += delta;
                 }
                 if (sqPin == posDst) {
-                    return pcDst == 0 || pcSrc - pcSelfSide == PIECE_ROOK;
+                    return pcDst == 0 || pcSrc - pcSelfSide == constant.PIECE_ROOK;
                 }
-                if (pcDst == 0 || pcSrc - pcSelfSide != PIECE_CANNON) {
+                if (pcDst == 0 || pcSrc - pcSelfSide != constant.PIECE_CANNON) {
                     return false;
                 }
                 sqPin += delta;
@@ -741,7 +772,7 @@ class Position {
                 }
                 return sqPin == posDst;
             }
-            case PIECE_PAWN:
+            case constant.PIECE_PAWN:
                 if (isEnemyHalf(posDst, this.sdPlayer) && (posDst == posSrc - 1 || posDst == posSrc + 1)) {
                     return true;
                 }
@@ -755,35 +786,35 @@ class Position {
         let pcSelfSide = getSelfSideTag(this.sdPlayer);
         let pcOppSide = getEnemySideTag(this.sdPlayer);
         for (let posSrc = 0; posSrc < 256; posSrc++) {
-            if (this.squares[posSrc] != pcSelfSide + PIECE_KING) {
+            if (this.squares[posSrc] != pcSelfSide + constant.PIECE_KING) {
                 continue;
             }
-            if (this.squares[getForwardPosForPawn(posSrc, this.sdPlayer)] == pcOppSide + PIECE_PAWN) {
+            if (this.squares[getForwardPosForPawn(posSrc, this.sdPlayer)] == pcOppSide + constant.PIECE_PAWN) {
                 return true;
             }
             for (let delta = -1; delta <= 1; delta += 2) {
-                if (this.squares[posSrc + delta] == pcOppSide + PIECE_PAWN) {
+                if (this.squares[posSrc + delta] == pcOppSide + constant.PIECE_PAWN) {
                     return true;
                 }
             }
             for (let i = 0; i < 4; i++) {
-                if (this.squares[posSrc + ADVISOR_DELTA[i]] != 0) {
+                if (this.squares[posSrc + constant.ADVISOR_DELTA[i]] != 0) {
                     continue;
                 }
                 for (let j = 0; j < 2; j++) {
-                    let pcDst = this.squares[posSrc + KNIGHT_CHECK_DELTA[i][j]];
-                    if (pcDst == pcOppSide + PIECE_KNIGHT) {
+                    let pcDst = this.squares[posSrc + constant.KNIGHT_CHECK_DELTA[i][j]];
+                    if (pcDst == pcOppSide + constant.PIECE_KNIGHT) {
                         return true;
                     }
                 }
             }
             for (let i = 0; i < 4; i++) {
-                let delta = KING_DELTA[i];
+                let delta = constant.KING_DELTA[i];
                 let posDst = posSrc + delta;
                 while (isChessOnBoard(posDst)) {
                     let pcDst = this.squares[posDst];
                     if (pcDst > 0) {
-                        if (pcDst == pcOppSide + PIECE_ROOK || pcDst == pcOppSide + PIECE_KING) {
+                        if (pcDst == pcOppSide + constant.PIECE_ROOK || pcDst == pcOppSide + constant.PIECE_KING) {
                             return true;
                         }
                         break;
@@ -794,7 +825,7 @@ class Position {
                 while (isChessOnBoard(posDst)) {
                     let pcDst = this.squares[posDst];
                     if (pcDst > 0) {
-                        if (pcDst == pcOppSide + PIECE_CANNON) {
+                        if (pcDst == pcOppSide + constant.PIECE_CANNON) {
                             return true;
                         }
                         break;
@@ -946,32 +977,5 @@ class Position {
 
     historyIndex(mv) {
         return ((this.squares[getSrcPosFromMotion(mv)] - 8) << 8) + getDstPosFromMotion(mv);
-    }
-
-    /**
-     * @method ½«×Ö·û×ª»»³É¶ÔÓ¦µÄÆå×Ó±êÊ¶
-     * @param {char} char ×Ö·ûÖµ
-     */
-    getChessIdFromChar(char) {
-        switch (char) {
-            case "K":
-                return PIECE_KING;
-            case "A":
-                return PIECE_ADVISOR;
-            case "B":
-            case "E":
-                return PIECE_BISHOP;
-            case "H":
-            case "N":
-                return PIECE_KNIGHT;
-            case "R":
-                return PIECE_ROOK;
-            case "C":
-                return PIECE_CANNON;
-            case "P":
-                return PIECE_PAWN;
-            default:
-                return -1;
-        }
     }
 }

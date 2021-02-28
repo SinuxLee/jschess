@@ -1,8 +1,8 @@
 /**
- * ÒôÆµ´¦Àí
+ * éŸ³é¢‘å¤„ç†
  */
 
-class GameAudio {
+export class GameAudio {
     constructor(game, container, soundPath) {
         this.game_ = game;
         this.soundPath_ = soundPath;
