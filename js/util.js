@@ -72,6 +72,12 @@ export function getCodeFromChar(char) {
     return char.charCodeAt(0);
 }
 
+export async function sleepMS(ms){
+	await new Promise(function(resolve){
+		setTimeout(resolve,ms)
+	})
+}
+
 /**
  * @class RC4(Rivest Cipher 4)
  * @constructor 参数为密钥

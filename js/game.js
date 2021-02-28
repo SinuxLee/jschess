@@ -29,7 +29,7 @@
 
 import { GameAudio } from "./audio.js";
 import { Board } from "./board.js";
-import { UIBoard, alertDelay, STARTUP_FEN } from "./ui.js"
+import { UIBoard, STARTUP_FEN } from "./ui.js"
 import * as constant from "./constant.js";
 
 export class Game {
@@ -44,15 +44,18 @@ export class Game {
     constructor() {
         this.imagePath_ = "images/";
         this.soundPath_ = "sounds/";
-        this.audio_ = new GameAudio(this, container, this.soundPath_);
+
+        this.audio_ =  new GameAudio(this, container, this.soundPath_);
+        this.board_ = new Board(this);
+        this.uiBoard_ = new UIBoard(this, container, this.imagePath_);
 
         // 初始化棋盘模型
-        this.board_ = new Board(this, container, this.imagePath_, this.soundPath_);
+        this.board_.initBoard();
         this.board_.setSearch(16);
         this.board_.millis = 10;
         this.board_.computer = 1;
 
-        this.uiBoard_ = new UIBoard(this, container, this.imagePath_);
+        
 
         this.sound = true; // 声音开关
         this.animated = true; // 动画开关
@@ -82,7 +85,7 @@ export class Game {
         this.audio_.playLoseSound();
         let rea = reason || 0; // 默认为正常输
         if (1 == rea) {
-            alertDelay("长打作负，请不要气馁！");
+            this.uiBoard_.alertDelay("长打作负，请不要气馁！");
         }
     }
 
@@ -94,7 +97,7 @@ export class Game {
         this.audio_.playWinSound();
         let rea = reason || 0;
         if (1 == rea) {
-            alertDelay("长打作负，祝贺你取得胜利！");
+            this.uiBoard_.alertDelay("长打作负，祝贺你取得胜利！");
         }
     }
 
@@ -105,12 +108,16 @@ export class Game {
     onDraw(reason) {
         this.audio_.playDrawSound();
         if (0 == reason) {
-            alertDelay("双方不变作和，辛苦了！");
+            this.uiBoard_.alertDelay("双方不变作和，辛苦了！");
         } else if (1 == reason) {
-            alertDelay("双方都没有进攻棋子了，辛苦了！");
+            this.uiBoard_.alertDelay("双方都没有进攻棋子了，辛苦了！");
         } else if (2 == reason) {
-            alertDelay("超过自然限着作和，辛苦了！");
+            this.uiBoard_.alertDelay("超过自然限着作和，辛苦了！");
         }
+    }
+
+    onOver(isWin){
+        this.uiBoard_.alertDelay(isWin ? "请再接再厉！" : "祝贺你取得胜利！");
     }
 
     onClickChess() {
@@ -234,5 +241,29 @@ export class Game {
     onFlushBoard() {
         this.uiBoard_.flushBoard();
     }
+
+    /**
+     * @method 绘制棋子
+     * @param {number} sq 棋子坐标 
+     * @param {boolean} selected 是否选中状态 0-未选中, 1-选中
+     */
+    onDrawSquare(sq, selected, piece){
+        this.uiBoard_.drawSquare(sq, selected, piece)
+    }
+
+    async onAddMove(text, value,){
+        await this.uiBoard_.addMove(text, value,)
+    }
+
+    async onMovePiece(posSrc, posDst){
+        await this.uiBoard_.fakeAnimation(posSrc, posDst);
+    }
+
+    async onMate(sqMate,sdPlayer){
+        await this.uiBoard_.onMate(sqMate,sdPlayer);
+    }
+
+    async onSelectSquare(sq){
+        await this.board_.selectedSquare(sq)
+    }
 }
-export const game = Game.getInstance();

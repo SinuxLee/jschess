@@ -70,8 +70,10 @@
         </div>
     </div>
     <script type="module" type="text/javascript">
-        import { game } from "./js/game.js";
-        window.game = game;
+        import { Game } from "./js/game.js";
+        (async () => {
+            window.game = Game.getInstance();
+        })()
     </script>
 </body>
 
