@@ -1,36 +1,15 @@
-/*
-search.js - Source Code for XiangQi Wizard Light, Part II
-
-XiangQi Wizard Light - a Chinese Chess Program for JavaScript
-Designed by Morning Yellow, Version: 1.0, Last Modified: Sep. 2012
-Copyright (C) 2004-2012 www.xqbase.com
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
-
 "use strict";
 
 import * as position from "./position.js";
-import {shellSort} from "./util.js";
+import { shellSort } from "./util.js";
 
-//不同的阶段
+// 不同的阶段
 const PHASE_HASH = 0;
 const PHASE_KILLER_1 = 1;
 const PHASE_KILLER_2 = 2;
 const PHASE_GEN_MOVES = 3;
 const PHASE_REST = 4;
+
 class MoveSort {
     constructor(mvHash, pos, killerTable, historyTable) {
         this.mvs = [];
@@ -71,47 +50,47 @@ class MoveSort {
                 if (this.mvHash > 0) {
                     return this.mvHash;
                 }
-                // No Break
-                case PHASE_KILLER_1:
-                    this.phase = PHASE_KILLER_2;
-                    if (this.mvKiller1 != this.mvHash && this.mvKiller1 > 0 &&
-                        this.pos.legalMove(this.mvKiller1)) {
-                        return this.mvKiller1;
+            //  No Break
+            case PHASE_KILLER_1:
+                this.phase = PHASE_KILLER_2;
+                if (this.mvKiller1 != this.mvHash && this.mvKiller1 > 0 &&
+                    this.pos.legalMove(this.mvKiller1)) {
+                    return this.mvKiller1;
+                }
+            //  No Break
+            case PHASE_KILLER_2:
+                this.phase = PHASE_GEN_MOVES;
+                if (this.mvKiller2 != this.mvHash && this.mvKiller2 > 0 &&
+                    this.pos.legalMove(this.mvKiller2)) {
+                    return this.mvKiller2;
+                }
+            //  No Break
+            case PHASE_GEN_MOVES:
+                this.phase = PHASE_REST;
+                this.mvs = this.pos.generateMoves(null);
+                this.vls = [];
+                for (let i = 0; i < this.mvs.length; i++) {
+                    this.vls.push(this.historyTable[this.pos.historyIndex(this.mvs[i])]);
+                }
+                shellSort(this.mvs, this.vls);
+                this.index = 0;
+            //  No Break
+            default:
+                while (this.index < this.mvs.length) {
+                    let mv = this.mvs[this.index];
+                    this.index++;
+                    if (mv != this.mvHash && mv != this.mvKiller1 && mv != this.mvKiller2) {
+                        return mv;
                     }
-                    // No Break
-                    case PHASE_KILLER_2:
-                        this.phase = PHASE_GEN_MOVES;
-                        if (this.mvKiller2 != this.mvHash && this.mvKiller2 > 0 &&
-                            this.pos.legalMove(this.mvKiller2)) {
-                            return this.mvKiller2;
-                        }
-                        // No Break
-                        case PHASE_GEN_MOVES:
-                            this.phase = PHASE_REST;
-                            this.mvs = this.pos.generateMoves(null);
-                            this.vls = [];
-                            for (let i = 0; i < this.mvs.length; i++) {
-                                this.vls.push(this.historyTable[this.pos.historyIndex(this.mvs[i])]);
-                            }
-                            shellSort(this.mvs, this.vls);
-                            this.index = 0;
-                            // No Break
-                        default:
-                            while (this.index < this.mvs.length) {
-                                let mv = this.mvs[this.index];
-                                this.index++;
-                                if (mv != this.mvHash && mv != this.mvKiller1 && mv != this.mvKiller2) {
-                                    return mv;
-                                }
-                            }
+                }
         }
         return 0;
     }
 }
 
-export const LIMIT_DEPTH = 64; //最大深度
-const NULL_DEPTH = 2; //最小深度
-const RANDOMNESS = 8; //最大随机值
+export const LIMIT_DEPTH = 64; // 最大深度
+const NULL_DEPTH = 2; // 最小深度
+const RANDOMNESS = 8; // 最大随机值
 
 const HASH_ALPHA = 1;
 const HASH_BETA = 2;
@@ -282,7 +261,7 @@ export class Search {
             vl = -this.searchFull(-vlBeta, 1 - vlBeta, depth - NULL_DEPTH - 1, true);
             this.pos.undoNullMove();
             if (vl >= vlBeta && (this.pos.nullSafe() ||
-                    this.searchFull(vlAlpha, vlBeta, depth - NULL_DEPTH, true) >= vlBeta)) {
+                this.searchFull(vlAlpha, vlBeta, depth - NULL_DEPTH, true) >= vlBeta)) {
                 return vl;
             }
         }
@@ -434,7 +413,7 @@ export class Search {
     }
 
     /**
-     * @method 获取美毫秒计算的节点数
+     * @method 获取每毫秒计算的节点数
      */
     getKNPS() {
         return this.allNodes / this.allMillis;

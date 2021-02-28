@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 
 <head>
-    <title>象棋小巫师</title>
+    <title>中国象棋</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link href="css/layout.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
-    <div id="game_title">象棋小巫师</div>
+    <div id="game_title">中国象棋</div>
     <div id="game_zone">
         <!-- 棋盘 -->
         <div id="game_board">
@@ -21,8 +21,9 @@
                     <option selected value="0">我先走</option>
                     <option value="1">电脑先走</option>
                     <option value="2">不用电脑</option>
-                </select></div>
-
+                </select>
+            </div>
+            </br>
             <div class="label">先走让子</div>
             <div><select id="selHandicap">
                     <option selected value="0">不让子</option>
@@ -62,29 +63,16 @@
 
             <div class="label">步骤</div>
             <div>
-                <select id="selMoveList" size="10" onchange="game.onRecordListChange()">
+                <select id="selMoveList" size="7" onchange="game.onRecordListChange()">
                     <option selected value="0">=== 开始 ===</option>
                 </select>
             </div>
         </div>
     </div>
-
-    <script type="module" type="text/javascript" charset="utf-8" src="util.js"></script>
-    <script type="module" type="text/javascript" charset="utf-8" src="constant.js"></script>
-    <script type="module" type="text/javascript" charset="utf-8" src="book.js"></script>
-    <script type="module" type="text/javascript" charset="utf-8" src="audio.js"></script>
-    <script type="module" type="text/javascript" charset="utf-8" src="ui.js"></script>
-    <script type="module" type="text/javascript" charset="utf-8" src="position.js"></script>
-    <script type="module" type="text/javascript" charset="utf-8" src="search.js"></script>
-    <script type="module" type="text/javascript" charset="utf-8" src="board.js"></script>
-    <script type="module" type="text/javascript" charset="utf-8" src="game.js"></script>
-    <!-- script type="text/javascript" src="test.js"></!-->
-
     <script type="module" type="text/javascript">
-        import {game} from "./game.js";
+        import { game } from "./js/game.js";
         window.game = game;
     </script>
-
 </body>
 
 </html>

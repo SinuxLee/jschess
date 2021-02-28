@@ -1,34 +1,22 @@
-/*
-board.js - Source Code for XiangQi Wizard Light, Part IV
-
-XiangQi Wizard Light - a Chinese Chess Program for JavaScript
-Designed by Morning Yellow, Version: 1.0, Last Modified: Sep. 2012
-Copyright (C) 2004-2012 www.xqbase.com
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
-
 "use strict";
 
-import {Position,isChessOnBoard,getSrcPosFromMotion,
-    getDstPosFromMotion,getSelfSideTag,makeMotionBySrcDst,
-    getChessPosX,getChessPosY,flipPos} from "./position.js";
+
 import * as constant from "./constant.js";
-import {getUiXFromPos,getUiYFromPos,getMotionPixelByStep,createOption,alertDelay} from "./ui.js";
-import {Search,LIMIT_DEPTH} from "./search.js";
-import {getCodeFromChar,getCharFromByteCode} from "./util.js";
+import * as util from "./util.js";
+import { Search, LIMIT_DEPTH } from "./search.js";
+
+// todo: 不应该和UI耦合
+import {
+    getUiXFromPos, getUiYFromPos, getMotionPixelByStep,
+    createOption, alertDelay
+} from "./ui.js";
+
+// todo: search 和 board 共用一套棋盘模型，search 用于计算，board用于存储
+import {
+    Position, isChessOnBoard, getSrcPosFromMotion,
+    getDstPosFromMotion, getSelfSideTag, makeMotionBySrcDst,
+    getChessPosX, getChessPosY, flipPos
+} from "./position.js";
 
 /**
  * @class Board
@@ -45,13 +33,13 @@ export class Board {
 
         this.search = null;
         this.imgSquares = [];
-        this.sqSelected = 0; //被选中的棋子
+        this.sqSelected = 0; // 被选中的棋子
 
         this.initBoard();
 
-        this.millis = 0; //思考的时间
-        this.computer = -1; //机器人开关, -1 - 不用机器, 0 - 机器人红方, 1 - 机器人黑方
-        this.busy = false; //是否思考中
+        this.millis = 0; // 思考的时间
+        this.computer = -1; // 机器人开关, -1 - 不用机器, 0 - 机器人红方, 1 - 机器人黑方
+        this.busy = false; // 是否思考中
         for (let sq = 0; sq < 256; sq++) {
             if (!isChessOnBoard(sq)) {
                 this.imgSquares.push(null);
@@ -81,8 +69,8 @@ export class Board {
     }
 
     initBoard() {
-        this.lastMotion = 0; //最后一步棋
-        this.result = constant.RESULT_INIT; //对局结果
+        this.lastMotion = 0; // 最后一步棋
+        this.result = constant.RESULT_INIT; // 对局结果
     }
 
     setSearch(hashLevel) {
@@ -379,10 +367,10 @@ export class Board {
     move2Iccs(mv) {
         let posSrc = getSrcPosFromMotion(mv);
         let posDst = getDstPosFromMotion(mv);
-        return getCharFromByteCode(getCodeFromChar("A") + getChessPosX(posSrc) - constant.FILE_LEFT) +
-            getCharFromByteCode(getCodeFromChar("9") - getChessPosY(posSrc) + constant.RANK_TOP) + "-" +
-            getCharFromByteCode(getCodeFromChar("A") + getChessPosX(posDst) - constant.FILE_LEFT) +
-            getCharFromByteCode(getCodeFromChar("9") - getChessPosY(posDst) + constant.RANK_TOP);
+        return util.getCharFromByteCode(util.getCodeFromChar("A") + getChessPosX(posSrc) - constant.FILE_LEFT) +
+            util.getCharFromByteCode(util.getCodeFromChar("9") - getChessPosY(posSrc) + constant.RANK_TOP) + "-" +
+            util.getCharFromByteCode(util.getCodeFromChar("A") + getChessPosX(posDst) - constant.FILE_LEFT) +
+            util.getCharFromByteCode(util.getCodeFromChar("9") - getChessPosY(posDst) + constant.RANK_TOP);
     }
 
     /**

@@ -1,13 +1,13 @@
 "use strict";
 
 import * as constant from "./constant.js";
-import {getChessPosX,getChessPosY} from "./position.js";
+import { getChessPosX, getChessPosY } from "./position.js";
 
 export const STARTUP_FEN = [
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w", //不让子
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKAB1R w", //让左马
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/R1BAKAB1R w", //让双马
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/9/1C5C1/9/RN2K2NR w", //让九子
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w", // 不让子
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKAB1R w", // 让左马
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/R1BAKAB1R w", // 让双马
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/9/1C5C1/9/RN2K2NR w", // 让九子
 ];
 
 /**
@@ -68,14 +68,14 @@ export class UIBoard {
         this.container_ = container;
         this.images_ = images;
 
-        //设置背景图片
+        // 设置背景图片
         let style = container.style;
         style.position = "relative";
         style.width = constant.UI_BOARD_WIDTH + "px";
         style.height = constant.UI_BOARD_HEIGHT + "px";
         style.background = "url(" + images + "board.jpg)";
 
-        //思考缓冲图
+        // 思考缓冲图
         this.thinking = document.createElement("img");
         this.thinking.src = images + "thinking.gif";
         let imgStyle = this.thinking.style;
@@ -85,7 +85,7 @@ export class UIBoard {
         imgStyle.top = constant.UI_THINKING_POS_TOP + "px";
         container.appendChild(this.thinking);
 
-        //棋子
+        // 棋子
         this.imgSquares = [];
 
         /*
@@ -104,7 +104,7 @@ export class UIBoard {
             style.zIndex = 0;
             img.onmousedown = function (sq_) {
                 return () => {
-                    //this_.clickSquare(sq_);
+                    // this_.clickSquare(sq_);
                 }
             }(sq);
 

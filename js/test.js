@@ -243,6 +243,9 @@ let PUZZLE_LIST = [
     "3ak1b1r/4a2Pn/4b4/4C4/9/9/cR7/n8/4A1p2/3AKC3 w",
 ];
 
+import { Position } from "./position.js";
+import { isChessOnBoard, makeMotionBySrcDst } from "./position.js";
+
 function test() {
     let pos = new Position();
     let legal = 0,
@@ -255,19 +258,19 @@ function test() {
         let curLegal = 0;
 
         pos.fromFen(PUZZLE_LIST[i]);
-        //尝试移动每个棋子
+        // 尝试移动每个棋子
         for (let posSrc = 0; posSrc < 256; posSrc++) {
             if (isChessOnBoard(posSrc)) {
                 for (let posDst = 0; posDst < 256; posDst++) {
                     if (isChessOnBoard(posDst)) {
-                        //尝试将当前棋子移动到其它位置
+                        // 尝试将当前棋子移动到其它位置
                         curLegal += (pos.legalMove(makeMotionBySrcDst(posSrc, posDst)) ? 1 : 0);
                     }
                 }
             }
         }
 
-        let mvs = pos.generateMoves(null); //产生可行的着法
+        let mvs = pos.generateMoves(null); // 产生可行的着法
         for (let j = 0; j < mvs.length; j++) {
             if (pos.makeMove(mvs[j])) {
                 curMoved++;

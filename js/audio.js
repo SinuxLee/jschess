@@ -2,6 +2,20 @@
  * 音频处理
  */
 
+const WAV_DRAW = "draw";
+const WAV_CHECK = "check";
+const WAV_CAPTURE = "capture";
+const WAV_MOVE = "move";
+const WAV_CLICK = "click";
+const WAV_NEWGAME = "newgame";
+const WAV_ILLEGAL = "illegal";
+const WAV_LOSS = "loss";
+const WAV_WIN = "win";
+const WAV_CHECK2 = "check2";
+const WAV_CAPTURE2 = "capture2";
+const WAV_MOVE2 = "move2";
+
+
 export class GameAudio {
     constructor(game, container, soundPath) {
         this.game_ = game;
@@ -13,51 +27,51 @@ export class GameAudio {
     }
 
     playDrawSound() {
-        this.playSound("draw");
+        this.playSound(WAV_DRAW);
     }
 
     playCheckSound() {
-        this.playSound("check");
+        this.playSound(WAV_CHECK);
     }
 
     playCaptureSound() {
-        this.playSound("capture");
+        this.playSound(WAV_CAPTURE);
     }
 
     playMoveSound() {
-        this.playSound("move");
+        this.playSound(WAV_MOVE);
     }
 
     playClickSound() {
-        this.playSound("click");
+        this.playSound(WAV_CLICK);
     }
 
     playNewGameSound() {
-        this.playSound("newgame");
+        this.playSound(WAV_NEWGAME);
     }
 
     playIllegalSound() {
-        this.playSound("illegal");
+        this.playSound(WAV_ILLEGAL);
     }
 
     playLoseSound() {
-        this.playSound("loss");
+        this.playSound(WAV_LOSS);
     }
 
     playWinSound() {
-        this.playSound("win");
+        this.playSound(WAV_WIN);
     }
 
     playAICheckSound() {
-        this.playSound("check2");
+        this.playSound(WAV_CHECK2);
     }
 
     playAICaptureSound() {
-        this.playSound("capture2");
+        this.playSound(WAV_CAPTURE2);
     }
 
     playAIMoveSound() {
-        this.playSound("move2");
+        this.playSound(WAV_MOVE2);
     }
 
     playSound(soundFile) {
@@ -67,8 +81,8 @@ export class GameAudio {
         try {
             new Audio(this.soundPath_ + soundFile + ".wav").play();
         } catch (e) {
-            this.dummy.innerHTML = "<embed src=\"" + this.soundPath_ + soundFile +
-                ".wav\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+            this.dummy.innerHTML =
+                `<embed src="${this.soundPath_ + soundFile}.wav" hidden="true" autostart="true" loop="false"/>`;
         }
     }
 }

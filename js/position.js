@@ -1,32 +1,10 @@
-/*
-position.js - Source Code for XiangQi Wizard Light, Part I
-
-XiangQi Wizard Light - a Chinese Chess Program for JavaScript
-Designed by Morning Yellow, Version: 1.0, Last Modified: Sep. 2012
-Copyright (C) 2004-2012 www.xqbase.com
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
-
 "use strict";
 
-import { RC4, getCharFromByteCode, getCodeFromChar,binarySearch} from "./util.js";
+import { RC4, getCharFromByteCode, getCodeFromChar, binarySearch } from "./util.js";
 import * as constant from "./constant.js";
-import {BOOK_DAT} from "./book.js";
+import { BOOK_DAT } from "./book.js";
 
-//todo 暂时还不知道干啥的
+// todo 暂时还不知道干啥的
 export const MATE_VALUE = 10000;
 export const BAN_VALUE = MATE_VALUE - 100;
 export const WIN_VALUE = MATE_VALUE - 200;
@@ -40,7 +18,7 @@ export const ADVANCED_VALUE = 3;
  * @param {number} pos 棋子的坐标
  */
 export function isChessOnBoard(pos) {
-    return constant.IN_BOARD_[pos] != 0;
+    return constant.IN_BOARD[pos] != 0;
 }
 
 /**
@@ -48,7 +26,7 @@ export function isChessOnBoard(pos) {
  * @param {number} pos 棋子的坐标
  */
 function isInFort(pos) {
-    return constant.IN_FORT_[pos] != 0;
+    return constant.IN_FORT[pos] != 0;
 }
 
 /**
@@ -163,7 +141,7 @@ function isExistBishopPin(posSrc, posDst) {
  * @param {number} posDst 目的位置
  */
 function isExistKnightPin(posSrc, posDst) {
-    return posSrc + constant.KNIGHT_PIN_[posDst - posSrc + 256];
+    return posSrc + constant.KNIGHT_PIN[posDst - posSrc + 256];
 }
 
 /**
@@ -266,7 +244,12 @@ function getMirrorMotionByX(motion) {
     return makeMotionBySrcDst(getMirrorPosByX(getSrcPosFromMotion(motion)), getMirrorPosByX(getDstPosFromMotion(motion)));
 }
 
-//todo 不太懂
+/**
+ * @method 计算我方产生威胁值
+ * @description 比如我方兵 威胁 对方老将，则用将的威胁值减去我方兵的削弱值
+ * @param {number} pc 对方棋子
+ * @param {number} lva 我方棋子削弱值
+ */
 function MVV_LVA(pc, lva) {
     return constant.MVV_VALUE[pc & 7] - lva;
 }
@@ -303,7 +286,7 @@ export class Position {
         this.squares = [];
         this.zobristKey = this.zobristLock = 0;
         this.vlWhite = this.vlBlack = 0;
-        this.motionList = [0]; //走棋列表
+        this.motionList = [0]; // 走棋列表
         this.pcList = [0];
         this.keyList = [0];
         this.chkList = [];
@@ -354,7 +337,7 @@ export class Position {
      * 虚拟结构
      */
     setIrrev() {
-        this.motionList = [0]; //走棋列表
+        this.motionList = [0]; // 走棋列表
         this.pcList = [0];
         this.keyList = [0];
         this.chkList = [this.checked()];
@@ -372,12 +355,12 @@ export class Position {
         this.squares[sq] = bDel ? 0 : pc;
         if (pc < 16) {
             pcAdjust = pc - 8;
-            this.vlWhite += bDel ? -constant.chessDynamicValue[pcAdjust][sq] :
-                constant.chessDynamicValue[pcAdjust][sq];
+            this.vlWhite += bDel ? -constant.DYNAMIC_CHESS_VALUE[pcAdjust][sq] :
+                constant.DYNAMIC_CHESS_VALUE[pcAdjust][sq];
         } else {
             pcAdjust = pc - 16;
-            this.vlBlack += bDel ? -constant.chessDynamicValue[pcAdjust][flipPos(sq)] :
-                constant.chessDynamicValue[pcAdjust][flipPos(sq)];
+            this.vlBlack += bDel ? -constant.DYNAMIC_CHESS_VALUE[pcAdjust][flipPos(sq)] :
+                constant.DYNAMIC_CHESS_VALUE[pcAdjust][flipPos(sq)];
             pcAdjust += 7;
         }
         this.zobristKey ^= PreGen_zobristKeyTable[pcAdjust][sq];
@@ -933,11 +916,11 @@ export class Position {
             return 0;
         }
         let mirror = false;
-        let lock = this.zobristLock >>> 1; // Convert into Unsigned
+        let lock = this.zobristLock >>> 1; //  Convert into Unsigned
         let index = binarySearch(BOOK_DAT, lock);
         if (index < 0) {
             mirror = true;
-            lock = this.mirror().zobristLock >>> 1; // Convert into Unsigned
+            lock = this.mirror().zobristLock >>> 1; //  Convert into Unsigned
             index = binarySearch(BOOK_DAT, lock);
         }
         if (index < 0) {

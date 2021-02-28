@@ -27,9 +27,9 @@
 
 "use strict";
 
-import {GameAudio} from "./audio.js";
-import {Board} from "./board.js";
-import {UIBoard,alertDelay,STARTUP_FEN} from "./ui.js"
+import { GameAudio } from "./audio.js";
+import { Board } from "./board.js";
+import { UIBoard, alertDelay, STARTUP_FEN } from "./ui.js"
 import * as constant from "./constant.js";
 
 export class Game {
@@ -46,7 +46,7 @@ export class Game {
         this.soundPath_ = "sounds/";
         this.audio_ = new GameAudio(this, container, this.soundPath_);
 
-        //初始化棋盘模型
+        // 初始化棋盘模型
         this.board_ = new Board(this, container, this.imagePath_, this.soundPath_);
         this.board_.setSearch(16);
         this.board_.millis = 10;
@@ -54,8 +54,8 @@ export class Game {
 
         this.uiBoard_ = new UIBoard(this, container, this.imagePath_);
 
-        this.sound = true; //声音开关
-        this.animated = true; //动画开关
+        this.sound = true; // 声音开关
+        this.animated = true; // 动画开关
     }
 
     setMaxThinkTimeMs(millis) {
@@ -80,7 +80,7 @@ export class Game {
      */
     onLose(reason) {
         this.audio_.playLoseSound();
-        let rea = reason || 0; //默认为正常输
+        let rea = reason || 0; // 默认为正常输
         if (1 == rea) {
             alertDelay("长打作负，请不要气馁！");
         }

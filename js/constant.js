@@ -1,28 +1,28 @@
 "use strict";
 
-//--------UI中的一些定义-----------------
+// --------UI中的一些定义-----------------
 
 /**
  * UI中棋盘大小定义
  */
-export const UI_BOARD_WIDTH = 521; //棋盘宽(px)
-export const UI_BOARD_HEIGHT = 577; //棋盘高
+export const UI_BOARD_WIDTH = 521; // 棋盘宽(px)
+export const UI_BOARD_HEIGHT = 577; // 棋盘高
 
 /**
  * UI中棋子大小定义
  */
-export const UI_CCHESS_SIZE = 57; //棋子大小
+export const UI_CCHESS_SIZE = 57; // 棋子大小
 
 /**
  * 棋盘四周空余大小
  */
-export const UI_BOARD_LEFT_LINE_POS = (UI_BOARD_WIDTH - UI_CCHESS_SIZE * 9) >> 1; //最左侧线的位置
-export const UI_BOARD_TOP_LINE_POS = (UI_BOARD_HEIGHT - UI_CCHESS_SIZE * 10) >> 1; //最上方线的位置
+export const UI_BOARD_LEFT_LINE_POS = (UI_BOARD_WIDTH - UI_CCHESS_SIZE * 9) >> 1; // 最左侧线的位置
+export const UI_BOARD_TOP_LINE_POS = (UI_BOARD_HEIGHT - UI_CCHESS_SIZE * 10) >> 1; // 最上方线的位置
 
 /**
  * Loading 图大小及位置
  */
-export const UI_THINKING_SIZE = 32; //菊花图片的大小
+export const UI_THINKING_SIZE = 32; // 菊花图片的大小
 export const UI_THINKING_POS_LEFT = (UI_BOARD_WIDTH - UI_THINKING_SIZE) >> 1;
 export const UI_THINKING_POS_TOP = (UI_BOARD_HEIGHT - UI_THINKING_SIZE) >> 1;
 
@@ -36,14 +36,14 @@ export const UI_THINKING_POS_TOP = (UI_BOARD_HEIGHT - UI_THINKING_SIZE) >> 1;
  * p-卒
  */
 export const PIECE_NAME = [
-    "oo", null, null, null, null, null, null, null, //[0, 7]
-    "rk", "ra", "rb", "rn", "rr", "rc", "rp", null, //[8, 15] 红方
-    "bk", "ba", "bb", "bn", "br", "bc", "bp", null, //[16, 24] 黑方
-    //将,  士,   相,   马,   车,    炮,    卒
+    "oo", null, null, null, null, null, null, null, // [0, 7]
+    "rk", "ra", "rb", "rn", "rr", "rc", "rp", null, // [8, 15] 红方
+    "bk", "ba", "bb", "bn", "br", "bc", "bp", null, // [16, 24] 黑方
+    // 将,  士,   相,   马,   车,    炮,    卒
 ];
 
 
-//------------逻辑定义--------------
+// ------------逻辑定义--------------
 
 /**
  * 红黑方定义: 0-黑, 1-红
@@ -54,36 +54,36 @@ export const RED_SIDE = 1;
 /**
  * 对局结果
  */
-export const RESULT_INIT = 0; //初始值
-export const RESULT_WIN = 1; //赢
-export const RESULT_DRAW = 2; //平
-export const RESULT_LOSS = 3; //输
+export const RESULT_INIT = 0; // 初始值
+export const RESULT_WIN = 1; // 赢
+export const RESULT_DRAW = 2; // 平
+export const RESULT_LOSS = 3; // 输
 
-//动画最多拆分为8次移动
+// 动画最多拆分为8次移动
 export const MAX_STEP = 8;
 
-//fen格式化
-export const FEN_PIECE = "        KABNRCP kabnrcp "; //8个字符一组，共3组。
+// fen 格式化
+export const FEN_PIECE = "        KABNRCP kabnrcp "; // 8个字符一组，共3组。
 
 /**
  * 棋子标识定义
  */
-export const PIECE_UNKNOWN = -1;    // 未知棋子
-export const PIECE_KING = 0;        // 将
-export const PIECE_ADVISOR = 1;     // 士
-export const PIECE_BISHOP = 2;      // 相
-export const PIECE_KNIGHT = 3;      // 马
-export const PIECE_ROOK = 4;        // 车
-export const PIECE_CANNON = 5;      // 炮
-export const PIECE_PAWN = 6;        // 卒
+export const PIECE_UNKNOWN = -1;    //  未知棋子
+export const PIECE_KING = 0;        //  将
+export const PIECE_ADVISOR = 1;     //  士
+export const PIECE_BISHOP = 2;      //  相
+export const PIECE_KNIGHT = 3;      //  马
+export const PIECE_ROOK = 4;        //  车
+export const PIECE_CANNON = 5;      //  炮
+export const PIECE_PAWN = 6;        //  卒
 
-export const RANK_TOP = 3;      //棋盘在第三行开始(从0开始数)
-export const RANK_BOTTOM = 12;  //棋盘在第十二行截止
-export const FILE_LEFT = 3;     //棋盘在第三列开始
-export const FILE_RIGHT = 11;   //棋盘在第十一列截止
+export const RANK_TOP = 3;      // 棋盘在第三行开始(从0开始数)
+export const RANK_BOTTOM = 12;  // 棋盘在第十二行截止
+export const FILE_LEFT = 3;     // 棋盘在第三列开始
+export const FILE_RIGHT = 11;   // 棋盘在第十一列截止
 
-export const ADD_PIECE = false; //添加棋子
-export const DEL_PIECE = true;  //删除棋子
+export const ADD_PIECE = false; // 添加棋子
+export const DEL_PIECE = true;  // 删除棋子
 
 /**
  * 所有为1的范围代表棋盘
@@ -99,28 +99,28 @@ export const DEL_PIECE = true;  //删除棋子
  *   所有board[Y][X] <==> board[Y<<4 + X]
  *   这样做是为了提高访问速度
  */
-export const IN_BOARD_ = [
-    //  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //1
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //2
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //3
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //4
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //5
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //6
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //7
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //8
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //9
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //10
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //11
-    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, //12
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //13
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //14
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //15
+export const IN_BOARD = [
+//  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 1
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 2
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 3
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 4
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 5
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 6
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 7
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 8
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 9
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 10
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 11
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, // 12
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 13
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 14
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 15
 ];
 
-//九宫的范围
-export const IN_FORT_ = [
+// 九宫的范围
+export const IN_FORT = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -139,7 +139,7 @@ export const IN_FORT_ = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ];
 
-// 合法的间隔 1-将可走的间隔 2-士可走的间隔 3-相可走间隔
+//  合法的间隔 1-将可走的间隔 2-士可走的间隔 3-相可走间隔
 export const LEGAL_SPAN = [
     0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -176,8 +176,8 @@ export const LEGAL_SPAN = [
     0, 0, 0, 0, 0, 0, 0,
 ];
 
-//马的相对可走点
-export const KNIGHT_PIN_ = [
+// 马的相对可走点
+export const KNIGHT_PIN = [
     0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -213,27 +213,34 @@ export const KNIGHT_PIN_ = [
     0, 0, 0, 0, 0, 0, 0,
 ];
 
-export const KING_DELTA = [-16, -1, 1, 16]; //老将的相对位移表
-export const ADVISOR_DELTA = [-17, -15, 15, 17]; //士的相对位移表
-export const KNIGHT_DELTA = [ //马的相对位移表
+// 老将的相对位移表
+export const KING_DELTA = [-16, -1, 1, 16];
+
+// 士的相对位移表
+export const ADVISOR_DELTA = [-17, -15, 15, 17];
+
+// 马的相对位移表
+export const KNIGHT_DELTA = [
     [-33, -31],
     [-18, 14],
     [-14, 18],
     [31, 33]
 ];
-export const KNIGHT_CHECK_DELTA = [ //马脚相对位移表
+
+// 马脚相对位移表
+export const KNIGHT_CHECK_DELTA = [
     [-33, -18],
     [-31, -14],
     [14, 31],
     [18, 33]
 ];
 
-// todo 暂时不知道干啥的
-export const MVV_VALUE = [50, 10, 10, 30, 40, 30, 20, 0];
+// 我方棋子为对方棋子产生的威胁值，依次为对方的 将 士 相 马 车 炮 卒 
+export const MVV_VALUE = [50, 10, 10, 30, 40, 30, 20];
 
-//棋子动态估值表
-export const chessDynamicValue = [
-    [ //将
+// 动态棋子估值表
+export const DYNAMIC_CHESS_VALUE = [
+    [ // 将
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -251,7 +258,7 @@ export const chessDynamicValue = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
-    [ //士
+    [ // 士
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -269,7 +276,7 @@ export const chessDynamicValue = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
-    [ //相
+    [ // 相
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -287,7 +294,7 @@ export const chessDynamicValue = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
-    [ //马
+    [ // 马
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -305,7 +312,7 @@ export const chessDynamicValue = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
-    [ //车
+    [ // 车
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -323,7 +330,7 @@ export const chessDynamicValue = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
-    [ //炮
+    [ // 炮
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -341,7 +348,7 @@ export const chessDynamicValue = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ],
-    [ //卒
+    [ // 卒
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

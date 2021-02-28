@@ -1,5 +1,5 @@
 /**
- * 一些与业务无关的工具函数
+ * 一些与业务无关的工具
  */
 
 "use strict";
@@ -25,13 +25,13 @@ export function binarySearch(vlss, vl) {
     return -1;
 }
 
-const SHELL_STEP = [0, 1, 4, 13, 40, 121, 364, 1093]; //步长
+const SHELL_STEP = [0, 1, 4, 13, 40, 121, 364, 1093]; // 步长
 /**
  * @method 希尔排序
  * @description 一次对两个数组同时排序
  */
 export function shellSort(mvs, vls) {
-    //寻找一个尽量大的步长
+    // 寻找一个尽量大的步长
     let stepLevel = 1;
     while (SHELL_STEP[stepLevel] < mvs.length) {
         stepLevel++;
@@ -82,12 +82,12 @@ export class RC4 {
         this.x = this.y = 0;
         this.state = [];
 
-        //[0 .. 255]种状态
+        // [0 .. 255]种状态
         for (let i = 0; i < 256; i++) {
             this.state.push(i);
         }
 
-        //初始排列
+        // 初始排列
         let j = 0;
         for (let i = 0; i < 256; i++) {
             j = (j + this.state[i] + key[i % key.length]) & 0xff;
@@ -101,9 +101,9 @@ export class RC4 {
         this.state[j] = t;
     }
 
-    // 产生密钥流
-    // 密文第i字节=明文第i字节^密钥流第i字节
-    // 明文 = 密文^密钥流
+    //  产生密钥流
+    //  密文第i字节=明文第i字节^密钥流第i字节
+    //  明文 = 密文^密钥流
     nextByte() {
         this.x = (this.x + 1) & 0xff;
         this.y = (this.y + this.state[this.x]) & 0xff;
