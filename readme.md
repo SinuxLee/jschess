@@ -27,3 +27,12 @@
 ## 前端使用ES6语法
 
 开发时，运行依赖于VSCode中"Live Server"插件
+
+## TODO LIST:
+- [ ] split board.js and position.js
+- [ ] ui.js and position.js
+- [ ] 内聚 position.js 和 search.js
+- [ ] 用 Vue + Element-UI 重构界面
+- [ ] 用脚本自动生成 book.js
+- [ ] board -> desk, position -> board
+- [ ] search -> ai, 可以启动多个AI。左右互搏，哈哈
