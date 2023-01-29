@@ -1,0 +1,21 @@
+{
+  "name": "jschess",
+  "version": "1.0.0",
+  "description": "中国象棋",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node ./js/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SinuxLee/jschess.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SinuxLee/jschess/issues"
+  },
+  "homepage": "https://github.com/SinuxLee/jschess#readme"
+}

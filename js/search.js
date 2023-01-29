@@ -1,33 +1,15 @@
-/*
-search.js - Source Code for XiangQi Wizard Light, Part II
-
-XiangQi Wizard Light - a Chinese Chess Program for JavaScript
-Designed by Morning Yellow, Version: 1.0, Last Modified: Sep. 2012
-Copyright (C) 2004-2012 www.xqbase.com
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
-
 "use strict";
 
-//²»Í¬µÄ½×¶Î
+import * as position from "./position.js";
+import { shellSort } from "./util.js";
+
+// ä¸åŒçš„é˜¶æ®µ
 const PHASE_HASH = 0;
 const PHASE_KILLER_1 = 1;
 const PHASE_KILLER_2 = 2;
 const PHASE_GEN_MOVES = 3;
 const PHASE_REST = 4;
+
 class MoveSort {
     constructor(mvHash, pos, killerTable, historyTable) {
         this.mvs = [];
@@ -68,53 +50,53 @@ class MoveSort {
                 if (this.mvHash > 0) {
                     return this.mvHash;
                 }
-                // No Break
-                case PHASE_KILLER_1:
-                    this.phase = PHASE_KILLER_2;
-                    if (this.mvKiller1 != this.mvHash && this.mvKiller1 > 0 &&
-                        this.pos.legalMove(this.mvKiller1)) {
-                        return this.mvKiller1;
+            //  No Break
+            case PHASE_KILLER_1:
+                this.phase = PHASE_KILLER_2;
+                if (this.mvKiller1 != this.mvHash && this.mvKiller1 > 0 &&
+                    this.pos.legalMove(this.mvKiller1)) {
+                    return this.mvKiller1;
+                }
+            //  No Break
+            case PHASE_KILLER_2:
+                this.phase = PHASE_GEN_MOVES;
+                if (this.mvKiller2 != this.mvHash && this.mvKiller2 > 0 &&
+                    this.pos.legalMove(this.mvKiller2)) {
+                    return this.mvKiller2;
+                }
+            //  No Break
+            case PHASE_GEN_MOVES:
+                this.phase = PHASE_REST;
+                this.mvs = this.pos.generateMoves(null);
+                this.vls = [];
+                for (let i = 0; i < this.mvs.length; i++) {
+                    this.vls.push(this.historyTable[this.pos.historyIndex(this.mvs[i])]);
+                }
+                shellSort(this.mvs, this.vls);
+                this.index = 0;
+            //  No Break
+            default:
+                while (this.index < this.mvs.length) {
+                    let mv = this.mvs[this.index];
+                    this.index++;
+                    if (mv != this.mvHash && mv != this.mvKiller1 && mv != this.mvKiller2) {
+                        return mv;
                     }
-                    // No Break
-                    case PHASE_KILLER_2:
-                        this.phase = PHASE_GEN_MOVES;
-                        if (this.mvKiller2 != this.mvHash && this.mvKiller2 > 0 &&
-                            this.pos.legalMove(this.mvKiller2)) {
-                            return this.mvKiller2;
-                        }
-                        // No Break
-                        case PHASE_GEN_MOVES:
-                            this.phase = PHASE_REST;
-                            this.mvs = this.pos.generateMoves(null);
-                            this.vls = [];
-                            for (let i = 0; i < this.mvs.length; i++) {
-                                this.vls.push(this.historyTable[this.pos.historyIndex(this.mvs[i])]);
-                            }
-                            shellSort(this.mvs, this.vls);
-                            this.index = 0;
-                            // No Break
-                        default:
-                            while (this.index < this.mvs.length) {
-                                let mv = this.mvs[this.index];
-                                this.index++;
-                                if (mv != this.mvHash && mv != this.mvKiller1 && mv != this.mvKiller2) {
-                                    return mv;
-                                }
-                            }
+                }
         }
         return 0;
     }
 }
 
-const LIMIT_DEPTH = 64; //×î´óÉî¶È
-const NULL_DEPTH = 2; //×îÐ¡Éî¶È
-const RANDOMNESS = 8; //×î´óËæ»úÖµ
+export const LIMIT_DEPTH = 64; // æœ€å¤§æ·±åº¦
+const NULL_DEPTH = 2; // æœ€å°æ·±åº¦
+const RANDOMNESS = 8; // æœ€å¤§éšæœºå€¼
 
 const HASH_ALPHA = 1;
 const HASH_BETA = 2;
 const HASH_PV = 3;
 
-class Search {
+export class Search {
     constructor(pos, hashLevel) {
         this.hashMask = (1 << hashLevel) - 1;
         this.pos = pos;
@@ -128,33 +110,33 @@ class Search {
         let hash = this.getHashItem();
         if (hash.zobristLock != this.pos.zobristLock) {
             mv[0] = 0;
-            return -MATE_VALUE;
+            return -position.MATE_VALUE;
         }
         mv[0] = hash.mv;
         let mate = false;
-        if (hash.vl > WIN_VALUE) {
-            if (hash.vl <= BAN_VALUE) {
-                return -MATE_VALUE;
+        if (hash.vl > position.WIN_VALUE) {
+            if (hash.vl <= position.BAN_VALUE) {
+                return -position.MATE_VALUE;
             }
             hash.vl -= this.pos.distance;
             mate = true;
-        } else if (hash.vl < -WIN_VALUE) {
-            if (hash.vl >= -BAN_VALUE) {
-                return -MATE_VALUE;
+        } else if (hash.vl < -position.WIN_VALUE) {
+            if (hash.vl >= -position.BAN_VALUE) {
+                return -position.ATE_VALUE;
             }
             hash.vl += this.pos.distance;
             mate = true;
         } else if (hash.vl == this.pos.drawValue()) {
-            return -MATE_VALUE;
+            return -position.MATE_VALUE;
         }
         if (hash.depth < depth && !mate) {
-            return -MATE_VALUE;
+            return -position.MATE_VALUE;
         }
         if (hash.flag == HASH_BETA) {
-            return (hash.vl >= vlBeta ? hash.vl : -MATE_VALUE);
+            return (hash.vl >= vlBeta ? hash.vl : -position.MATE_VALUE);
         }
         if (hash.flag == HASH_ALPHA) {
-            return (hash.vl <= vlAlpha ? hash.vl : -MATE_VALUE);
+            return (hash.vl <= vlAlpha ? hash.vl : -position.MATE_VALUE);
         }
         return hash.vl;
     }
@@ -166,13 +148,13 @@ class Search {
         }
         hash.flag = flag;
         hash.depth = depth;
-        if (vl > WIN_VALUE) {
-            if (mv == 0 && vl <= BAN_VALUE) {
+        if (vl > position.WIN_VALUE) {
+            if (mv == 0 && vl <= position.BAN_VALUE) {
                 return;
             }
             hash.vl = vl + this.pos.distance;
-        } else if (vl < -WIN_VALUE) {
-            if (mv == 0 && vl >= -BAN_VALUE) {
+        } else if (vl < -position.WIN_VALUE) {
+            if (mv == 0 && vl >= -position.BAN_VALUE) {
                 return;
             }
             hash.vl = vl - this.pos.distance;
@@ -208,7 +190,7 @@ class Search {
         if (this.pos.distance == LIMIT_DEPTH) {
             return this.pos.evaluate();
         }
-        let vlBest = -MATE_VALUE;
+        let vlBest = -position.MATE_VALUE;
         let mvs = [],
             vls = [];
         if (this.pos.inCheck()) {
@@ -229,7 +211,7 @@ class Search {
             mvs = this.pos.generateMoves(vls);
             shellSort(mvs, vls);
             for (let i = 0; i < mvs.length; i++) {
-                if (vls[i] < 10 || (vls[i] < 20 && isSelfHalf(getDstPosFromMotion(mvs[i]), this.pos.sdPlayer))) {
+                if (vls[i] < 10 || (vls[i] < 20 && position.isSelfHalf(position.getDstPosFromMotion(mvs[i]), this.pos.sdPlayer))) {
                     mvs.length = i;
                     break;
                 }
@@ -249,7 +231,7 @@ class Search {
                 vlAlpha = Math.max(vl, vlAlpha);
             }
         }
-        return vlBest == -MATE_VALUE ? this.pos.mateValue() : vlBest;
+        return vlBest == -position.MATE_VALUE ? this.pos.mateValue() : vlBest;
     }
 
     searchFull(vlAlpha_, vlBeta, depth, noNull) {
@@ -268,7 +250,7 @@ class Search {
         }
         let mvHash = [0];
         vl = this.probeHash(vlAlpha, vlBeta, depth, mvHash);
-        if (vl > -MATE_VALUE) {
+        if (vl > -position.MATE_VALUE) {
             return vl;
         }
         if (this.pos.distance == LIMIT_DEPTH) {
@@ -279,12 +261,12 @@ class Search {
             vl = -this.searchFull(-vlBeta, 1 - vlBeta, depth - NULL_DEPTH - 1, true);
             this.pos.undoNullMove();
             if (vl >= vlBeta && (this.pos.nullSafe() ||
-                    this.searchFull(vlAlpha, vlBeta, depth - NULL_DEPTH, true) >= vlBeta)) {
+                this.searchFull(vlAlpha, vlBeta, depth - NULL_DEPTH, true) >= vlBeta)) {
                 return vl;
             }
         }
         let hashFlag = HASH_ALPHA;
-        let vlBest = -MATE_VALUE;
+        let vlBest = -position.MATE_VALUE;
         let mvBest = 0;
         let sort = new MoveSort(mvHash[0], this.pos, this.killerTable, this.historyTable);
         let mv;
@@ -293,7 +275,7 @@ class Search {
                 continue;
             }
             let newDepth = this.pos.inCheck() || sort.singleReply ? depth : depth - 1;
-            if (vlBest == -MATE_VALUE) {
+            if (vlBest == -position.MATE_VALUE) {
                 vl = -this.searchFull(-vlBeta, -vlAlpha, newDepth, false);
             } else {
                 vl = -this.searchFull(-vlAlpha - 1, -vlAlpha, newDepth, false);
@@ -316,7 +298,7 @@ class Search {
                 }
             }
         }
-        if (vlBest == -MATE_VALUE) {
+        if (vlBest == -position.MATE_VALUE) {
             return this.pos.mateValue();
         }
         this.recordHash(hashFlag, vlBest, depth, mvBest);
@@ -327,28 +309,28 @@ class Search {
     }
 
     searchRoot(depth) {
-        let vlBest = -MATE_VALUE;
+        let vlBest = -position.MATE_VALUE;
         let sort = new MoveSort(this.mvResult, this.pos, this.killerTable, this.historyTable);
-        let mv;
+        let mv = 0;
         while ((mv = sort.next()) > 0) {
             if (!this.pos.makeMove(mv)) {
                 continue;
             }
             let newDepth = this.pos.inCheck() ? depth : depth - 1;
-            let vl;
-            if (vlBest == -MATE_VALUE) {
-                vl = -this.searchFull(-MATE_VALUE, MATE_VALUE, newDepth, true);
+            let vl = 0;
+            if (vlBest == -position.MATE_VALUE) {
+                vl = -this.searchFull(-position.MATE_VALUE, position.MATE_VALUE, newDepth, true);
             } else {
                 vl = -this.searchFull(-vlBest - 1, -vlBest, newDepth, false);
                 if (vl > vlBest) {
-                    vl = -this.searchFull(-MATE_VALUE, -vlBest, newDepth, true);
+                    vl = -this.searchFull(-position.MATE_VALUE, -vlBest, newDepth, true);
                 }
             }
             this.pos.undoMakeMove();
             if (vl > vlBest) {
                 vlBest = vl;
                 this.mvResult = mv;
-                if (vlBest > -WIN_VALUE && vlBest < WIN_VALUE) {
+                if (vlBest > -position.WIN_VALUE && vlBest < position.WIN_VALUE) {
                     vlBest += Math.floor(Math.random() * RANDOMNESS) -
                         Math.floor(Math.random() * RANDOMNESS);
                     vlBest = (vlBest == this.pos.drawValue() ? vlBest - 1 : vlBest);
@@ -378,9 +360,9 @@ class Search {
     }
 
     /**
-     * @method °´ÕÕÖ¸¶¨µÄÉî¶ÈºÍÊ±¼ä£¬ËÑË÷×Å·¨
-     * @param {number} depth ËÑË÷Éî¶È
-     * @param {number} millis ÏÞÖÆËÑË÷Ê±¼ä£¬µ¥Î»ms
+     * @method æŒ‰ç…§æŒ‡å®šçš„æ·±åº¦å’Œæ—¶é—´ï¼Œæœç´¢ç€æ³•
+     * @param {number} depth æœç´¢æ·±åº¦
+     * @param {number} millis é™åˆ¶æœç´¢æ—¶é—´ï¼Œå•ä½ms
      */
     searchMain(depth, millis) {
         this.mvResult = this.pos.bookMove();
@@ -420,10 +402,10 @@ class Search {
             if (this.allMillis > millis) {
                 break;
             }
-            if (vl > WIN_VALUE || vl < -WIN_VALUE) {
+            if (vl > position.WIN_VALUE || vl < -position.WIN_VALUE) {
                 break;
             }
-            if (this.searchUnique(1 - WIN_VALUE, i)) {
+            if (this.searchUnique(1 - position.WIN_VALUE, i)) {
                 break;
             }
         }
@@ -431,7 +413,7 @@ class Search {
     }
 
     /**
-     * @method »ñÈ¡ÃÀºÁÃë¼ÆËãµÄ½ÚµãÊý
+     * @method èŽ·å–æ¯æ¯«ç§’è®¡ç®—çš„èŠ‚ç‚¹æ•°
      */
     getKNPS() {
         return this.allNodes / this.allMillis;

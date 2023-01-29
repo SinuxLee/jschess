@@ -1,33 +1,38 @@
 /**
- * Êı¾İ¶¨Òå:
- * 1.Æå×Ó: ºÚ¡¢ºì¡¢¿Õ
- * 2.Æå×Ó¹ÀÖµ
- * 3.Æå×Ó×ßÎ»±í
- * 4.Î»ÖÃ:ÆåÅÌ×ø±êÏµ¡¢µã¡¢Ïß¡¢»ÚÆå
- * 5.ÆåÅÌ
- * 6.Íæ¼Ò(player)
- * 7.·¿¼ä
- * 8.Â¼Ïñ
- * 9.×ßÆå¹æÔò
+ * æ•°æ®å®šä¹‰:
+ * 1.æ£‹å­: é»‘ã€çº¢ã€ç©º
+ * 2.æ£‹å­ä¼°å€¼
+ * 3.æ£‹å­èµ°ä½è¡¨
+ * 4.ä½ç½®:æ£‹ç›˜åæ ‡ç³»ã€ç‚¹ã€çº¿ã€æ‚”æ£‹
+ * 5.æ£‹ç›˜
+ * 6.ç©å®¶(player)
+ * 7.æˆ¿é—´
+ * 8.å½•åƒ
+ * 9.èµ°æ£‹è§„åˆ™
  * 10.ai
- * 11.¿ª¾Ö¿â
- * 12.Íæ·¨ÀàĞÍ¶¨Òå(³£¹æ¡¢½ÒÆå¡¢·­·­Æå)
- * 13.ÓÎÏ·Ä£Ê½¶¨Òå(½ğ±Ò¡¢±ÈÈü¡¢eloÆåÁ¦ÆÀ²â¡¢²Ğ¾Ö´³¹Ø¡¢ÈË»ú¡¢ºÃÓÑ·¿¡¢ÅÅÎ»Èü¡¢¹ÛÕ½¡¢½ÌÑ§¡¢ÍÆÑİ¹¤¾ß)
+ * 11.å¼€å±€åº“
+ * 12.ç©æ³•ç±»å‹å®šä¹‰(å¸¸è§„ã€æ­æ£‹ã€ç¿»ç¿»æ£‹)
+ * 13.æ¸¸æˆæ¨¡å¼å®šä¹‰(é‡‘å¸ã€æ¯”èµ›ã€eloæ£‹åŠ›è¯„æµ‹ã€æ®‹å±€é—¯å…³ã€äººæœºã€å¥½å‹æˆ¿ã€æ’ä½èµ›ã€è§‚æˆ˜ã€æ•™å­¦ã€æ¨æ¼”å·¥å…·)
  * 
  * 
- * ÊõÓï¶¨Òå:
- * 1.Piece Æå×Ó£¬²»ÒªÓÃchess£¡chessÊÇ¹ú¼ÊÏóÆåµÄÒâË¼
+ * æœ¯è¯­å®šä¹‰:
+ * 1.Piece æ£‹å­ï¼Œä¸è¦ç”¨chessï¼chessæ˜¯å›½é™…è±¡æ£‹çš„æ„æ€
  * 
  * Desk --> Player --> Board --> Piece      Rule    AI
  * |        |           |          |        |       |
- * Î¬³Ö     ±£´æ        ±£´æ        ×ßÆå    ¸½¼Ó    ¼ÆËã
- * ÓÎÏ·     Íæ¼Ò        Æå×Ó        »ù±¾    ¹æÔò    ÏÂÒ»²½Æå
- * Á÷³Ì     ĞÅÏ¢        ×ßÆåĞÅÏ¢    ¹æÔò
+ * ç»´æŒ     ä¿å­˜        ä¿å­˜        èµ°æ£‹    é™„åŠ     è®¡ç®—
+ * æ¸¸æˆ     ç©å®¶        æ£‹å­        åŸºæœ¬    è§„åˆ™    ä¸‹ä¸€æ­¥æ£‹
+ * æµç¨‹     ä¿¡æ¯        èµ°æ£‹ä¿¡æ¯    è§„åˆ™
  */
 
 "use strict";
 
-class Game {
+import { GameAudio } from "./audio.js";
+import { Board } from "./board.js";
+import { UIBoard, STARTUP_FEN } from "./ui.js"
+import * as constant from "./constant.js";
+
+export class Game {
     static getInstance() {
         if (!Game.instance) {
             Game.instance = new Game();
@@ -39,18 +44,21 @@ class Game {
     constructor() {
         this.imagePath_ = "images/";
         this.soundPath_ = "sounds/";
-        this.audio_ = new GameAudio(this, container, this.soundPath_);
 
-        //³õÊ¼»¯ÆåÅÌÄ£ĞÍ
-        this.board_ = new Board(this, container, this.imagePath_, this.soundPath_);
+        this.audio_ =  new GameAudio(this, container, this.soundPath_);
+        this.board_ = new Board(this);
+        this.uiBoard_ = new UIBoard(this, container, this.imagePath_);
+
+        // åˆå§‹åŒ–æ£‹ç›˜æ¨¡å‹
+        this.board_.initBoard();
         this.board_.setSearch(16);
         this.board_.millis = 10;
         this.board_.computer = 1;
 
-        this.uiBoard_ = new UIBoard(this, container, this.imagePath_);
+        
 
-        this.sound = true; //ÉùÒô¿ª¹Ø
-        this.animated = true; //¶¯»­¿ª¹Ø
+        this.sound = true; // å£°éŸ³å¼€å…³
+        this.animated = true; // åŠ¨ç”»å¼€å…³
     }
 
     setMaxThinkTimeMs(millis) {
@@ -70,42 +78,46 @@ class Game {
     }
 
     /**
-     * @method ÊäÁË
-     * @param {number} reason ÊäµÄÔ­Òò£¬0-Õı³£´òÊäÁË, 1-ÎÒ·½³¤½«/³¤×½
+     * @method è¾“äº†
+     * @param {number} reason è¾“çš„åŸå› ï¼Œ0-æ­£å¸¸æ‰“è¾“äº†, 1-æˆ‘æ–¹é•¿å°†/é•¿æ‰
      */
     onLose(reason) {
         this.audio_.playLoseSound();
-        let rea = reason || 0; //Ä¬ÈÏÎªÕı³£Êä
+        let rea = reason || 0; // é»˜è®¤ä¸ºæ­£å¸¸è¾“
         if (1 == rea) {
-            alertDelay("³¤´ò×÷¸º£¬Çë²»ÒªÆøÄÙ£¡");
+            this.uiBoard_.alertDelay("é•¿æ‰“ä½œè´Ÿï¼Œè¯·ä¸è¦æ°”é¦ï¼");
         }
     }
 
     /**
-     * @method Ó®ÁË
-     * @param {number} reason 0-Õı³£´òÓ®, 1-¶Ô·½³¤×½/³¤½«
+     * @method èµ¢äº†
+     * @param {number} reason 0-æ­£å¸¸æ‰“èµ¢, 1-å¯¹æ–¹é•¿æ‰/é•¿å°†
      */
     onWin(reason) {
         this.audio_.playWinSound();
         let rea = reason || 0;
         if (1 == rea) {
-            alertDelay("³¤´ò×÷¸º£¬×£ºØÄãÈ¡µÃÊ¤Àû£¡");
+            this.uiBoard_.alertDelay("é•¿æ‰“ä½œè´Ÿï¼Œç¥è´ºä½ å–å¾—èƒœåˆ©ï¼");
         }
     }
 
     /**
-     * @method Æ½¾Ö
-     * @param {number} reason,0-²»±ä×Å·¨, 1-Ë«·½Ã»ÓĞ½ø¹¥Æå×ÓÁË
+     * @method å¹³å±€
+     * @param {number} reason,0-ä¸å˜ç€æ³•, 1-åŒæ–¹æ²¡æœ‰è¿›æ”»æ£‹å­äº†
      */
     onDraw(reason) {
         this.audio_.playDrawSound();
         if (0 == reason) {
-            alertDelay("Ë«·½²»±ä×÷ºÍ£¬ĞÁ¿àÁË£¡");
+            this.uiBoard_.alertDelay("åŒæ–¹ä¸å˜ä½œå’Œï¼Œè¾›è‹¦äº†ï¼");
         } else if (1 == reason) {
-            alertDelay("Ë«·½¶¼Ã»ÓĞ½ø¹¥Æå×ÓÁË£¬ĞÁ¿àÁË£¡");
+            this.uiBoard_.alertDelay("åŒæ–¹éƒ½æ²¡æœ‰è¿›æ”»æ£‹å­äº†ï¼Œè¾›è‹¦äº†ï¼");
         } else if (2 == reason) {
-            alertDelay("³¬¹ı×ÔÈ»ÏŞ×Å×÷ºÍ£¬ĞÁ¿àÁË£¡");
+            this.uiBoard_.alertDelay("è¶…è¿‡è‡ªç„¶é™ç€ä½œå’Œï¼Œè¾›è‹¦äº†ï¼");
         }
+    }
+
+    onOver(isWin){
+        this.uiBoard_.alertDelay(isWin ? "è¯·å†æ¥å†å‰ï¼" : "ç¥è´ºä½ å–å¾—èƒœåˆ©ï¼");
     }
 
     onClickChess() {
@@ -168,7 +180,7 @@ class Game {
     }
 
     /**
-     * @method µã»÷ÖØĞÂ¿ªÊ¼
+     * @method ç‚¹å‡»é‡æ–°å¼€å§‹
      */
     onClickRestart() {
         selMoveList.options.length = 1;
@@ -178,7 +190,7 @@ class Game {
     }
 
     /**
-     * @method µã»÷»ÚÆå
+     * @method ç‚¹å‡»æ‚”æ£‹
      */
     onClickRetract() {
         for (let i = this.board_.pos.motionList.length; i < selMoveList.options.length; i++) {
@@ -190,7 +202,7 @@ class Game {
     }
 
     /**
-     * @method ÉèÖÃAIµÈ¼¶
+     * @method è®¾ç½®AIç­‰çº§
      */
     onClickLevelChange() {
         let thinkTimeMs = Math.pow(10, selLevel.selectedIndex + 1);
@@ -198,11 +210,11 @@ class Game {
     }
 
     /**
-     * @method ×ßÆå¼ÇÂ¼ÓĞ±ä¸ü
+     * @method èµ°æ£‹è®°å½•æœ‰å˜æ›´
      */
     onRecordListChange() {
         let board = Game.getInstance().getBoard();
-        if (board.result == RESULT_INIT) {
+        if (board.result == constant.RESULT_INIT) {
             selMoveList.selectedIndex = selMoveList.options.length - 1;
             return;
         }
@@ -224,11 +236,34 @@ class Game {
     }
 
     /**
-     * Ë¢ĞÂÆåÅÌUI
+     * åˆ·æ–°æ£‹ç›˜UI
      */
     onFlushBoard() {
         this.uiBoard_.flushBoard();
     }
-}
 
-let game = Game.getInstance();
+    /**
+     * @method ç»˜åˆ¶æ£‹å­
+     * @param {number} sq æ£‹å­åæ ‡ 
+     * @param {boolean} selected æ˜¯å¦é€‰ä¸­çŠ¶æ€ 0-æœªé€‰ä¸­, 1-é€‰ä¸­
+     */
+    onDrawSquare(sq, selected, piece){
+        this.uiBoard_.drawSquare(sq, selected, piece)
+    }
+
+    async onAddMove(text, value,){
+        await this.uiBoard_.addMove(text, value,)
+    }
+
+    async onMovePiece(posSrc, posDst){
+        await this.uiBoard_.fakeAnimation(posSrc, posDst);
+    }
+
+    async onMate(sqMate,sdPlayer){
+        await this.uiBoard_.onMate(sqMate,sdPlayer);
+    }
+
+    async onSelectSquare(sq){
+        await this.board_.selectedSquare(sq)
+    }
+}
