@@ -20,17 +20,23 @@
  * 
  * Desk --> Player --> Board --> Piece      Rule    AI
  * |        |           |          |        |       |
- * 维持     保存        保存        走棋    附加    计算
- * 游戏     玩家        棋子        基本    规则    下一步棋
- * 流程     信息        走棋信息    规则
+ * 维持     保存        保存        走棋      附加    计算
+ * 游戏     玩家        棋子        基本      规则    下一步棋
+ * 流程     信息        走棋信息     规则
  */
 
 "use strict";
 
 import { GameAudio } from "./audio.js";
 import { Board } from "./board.js";
-import { UIBoard, STARTUP_FEN } from "./ui.js"
-import * as constant from "./constant.js";
+import { UIBoard } from "./ui.js"
+
+const STARTUP_FEN = [
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w", // 不让子
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKAB1R w", // 让左马
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/R1BAKAB1R w", // 让双马
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/9/1C5C1/9/RN2K2NR w", // 让九子
+];
 
 export class Game {
     static getInstance() {
@@ -45,17 +51,13 @@ export class Game {
         this.imagePath_ = "images/";
         this.soundPath_ = "sounds/";
 
-        this.audio_ =  new GameAudio(this, container, this.soundPath_);
+        this.audio_ =  new GameAudio(this, this.soundPath_);
         this.board_ = new Board(this);
         this.uiBoard_ = new UIBoard(this, container, this.imagePath_);
 
         // 初始化棋盘模型
-        this.board_.initBoard();
+        this.board_.initBoard(10,1);
         this.board_.setSearch(16);
-        this.board_.millis = 10;
-        this.board_.computer = 1;
-
-        
 
         this.sound = true; // 声音开关
         this.animated = true; // 动画开关
@@ -213,16 +215,18 @@ export class Game {
      * @method 走棋记录有变更
      */
     onRecordListChange() {
-        let board = Game.getInstance().getBoard();
-        if (board.result == constant.RESULT_INIT) {
+        const board = this.getBoard();
+        if (board.isInit()) {
             selMoveList.selectedIndex = selMoveList.options.length - 1;
             return;
         }
+
         let from = board.pos.motionList.length;
         let to = selMoveList.selectedIndex;
         if (from == to + 1) {
             return;
         }
+
         if (from > to + 1) {
             for (let i = to + 1; i < from; i++) {
                 board.pos.undoMakeMove();

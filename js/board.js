@@ -1,18 +1,24 @@
 "use strict";
 
 
-import * as constant from "./constant.js";
-import * as util from "./util.js";
 import { Search, LIMIT_DEPTH } from "./search.js";
 
 // todo: search 和 board 共用一套棋盘模型，search 用于计算，board用于存储
 import {
     Position, isChessOnBoard, getSrcPosFromMotion,
-    getDstPosFromMotion, getSelfSideTag, makeMotionBySrcDst,
-    getChessPosX, getChessPosY, flipPos
+    getDstPosFromMotion, WIN_VALUE
 } from "./position.js";
 
+// 开局
 const normalFen = "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1"
+
+// 对局结果
+const Result = Object.freeze({
+    INIT: 0,    // 初始值
+    WIN: 1,     // 赢
+    DRAW: 2,    // 平
+    LOSS: 3,    // 输
+})
 
 /**
  * @class Board
@@ -32,10 +38,16 @@ export class Board {
         this.busy = false; // 是否思考中
     }
 
-    initBoard() {
+    initBoard(thinking,computer) {
+        this.millis = thinking;
+        this.computer = computer;
         this.lastMotion = 0; // 最后一步棋
-        this.result = constant.RESULT_INIT; // 对局结果
+        this.result = Result.INIT; // 对局结果
         this.flushBoard();
+    }
+
+    isInit() {
+        return this.result === Result.INIT
     }
 
     setSearch(hashLevel) {
@@ -44,7 +56,7 @@ export class Board {
 
     // 翻转棋子位置
     flipped(sq) {
-        return this.computer == 0 ? flipPos(sq) : sq;
+        return this.computer == 0 ? this.pos.flipPos(sq) : sq;
     }
 
     computerMove() {
@@ -88,14 +100,14 @@ export class Board {
 
         if (this.pos.isMate()) {
             if (computerMove) {
-                this.result = constant.RESULT_LOSS;
+                this.result = Result.LOSS;
                 this.game_.onLose();
             } else {
-                this.result = constant.RESULT_WIN;
+                this.result = Result.WIN;
                 this.game_.onWin();
             }
 
-            let pc = getSelfSideTag(this.pos.sdPlayer) + constant.PIECE_KING;
+            let pc = this.pos.getSelfSideTag(this.pos.sdPlayer);
             let sqMate = 0;
             for (let sq = 0; sq < 256; sq++) {
                 if (this.pos.squares[sq] == pc) {
@@ -118,15 +130,15 @@ export class Board {
         let vlRep = this.pos.repStatus(3);
         if (vlRep > 0) {
             vlRep = this.pos.repValue(vlRep);
-            if (vlRep > -constant.WIN_VALUE && vlRep < constant.WIN_VALUE) {
+            if (vlRep > -WIN_VALUE && vlRep < WIN_VALUE) {
                 this.game_.onDraw(0);
-                this.result = constant.RESULT_DRAW;
+                this.result = Result.DRAW;
             } else if (computerMove == (vlRep < 0)) {
                 this.game_.onLose(1);
-                this.result = RESULT_LOSS;
+                this.result = Result.LOSS;
             } else {
                 this.game_.onWin(1);
-                this.result = RESULT_WIN;
+                this.result = Result.WIN;
             }
             await this.onAddMove();
             this.busy = false;
@@ -143,7 +155,7 @@ export class Board {
             }
             if (!hasMaterial) {
                 this.game_.onDraw(1);
-                this.result = RESULT_DRAW;
+                this.result = Result.DRAW;
                 await this.onAddMove();
                 this.busy = false;
                 return;
@@ -158,7 +170,7 @@ export class Board {
             }
             if (!captured) {
                 this.game_.onDraw(2);
-                this.result = constant.RESULT_DRAW;
+                this.result = Result.DRAW;
                 await this.onAddMove();
                 this.busy = false;
                 return;
@@ -216,12 +228,12 @@ export class Board {
      * @param {number} pos 棋子坐标
      */
     async selectedSquare(pos) {
-        if (this.busy || this.result != constant.RESULT_INIT) {
+        if (this.busy || this.result != Result.INIT) {
             return;
         }
         let sq = this.flipped(pos);
         let pc = this.pos.squares[sq];
-        if ((pc & getSelfSideTag(this.pos.sdPlayer)) != 0) {
+        if ((pc & this.pos.getSelfSideTag(this.pos.sdPlayer)) != 0) {
             this.game_.onClickChess();
             if (this.lastMotion != 0) {
                 this.drawSquare(getSrcPosFromMotion(this.lastMotion), false);
@@ -233,7 +245,7 @@ export class Board {
             this.drawSquare(sq, true);
             this.sqSelected = sq;
         } else if (this.sqSelected > 0) {
-            await this.addMove(makeMotionBySrcDst(this.sqSelected, sq), false);
+            await this.addMove(this.pos.makeMotionBySrcDst(this.sqSelected, sq), false);
         }
     }
 
@@ -283,7 +295,7 @@ export class Board {
         if (this.busy) {
             return;
         }
-        this.result = constant.RESULT_INIT;
+        this.result = Result.INIT;
         if (this.pos.motionList.length > 1) {
             this.pos.undoMakeMove();
         }
@@ -297,19 +309,6 @@ export class Board {
     }
 
     /**
-     * @method 走棋着法转换成ICCS坐标格式，即着法表示成起点和终点的坐标。
-     * @param {number} mv 
-     */
-    move2Iccs(mv) {
-        let posSrc = getSrcPosFromMotion(mv);
-        let posDst = getDstPosFromMotion(mv);
-        return util.getCharFromByteCode(util.getCodeFromChar("A") + getChessPosX(posSrc) - constant.FILE_LEFT) +
-            util.getCharFromByteCode(util.getCodeFromChar("9") - getChessPosY(posSrc) + constant.RANK_TOP) + "-" +
-            util.getCharFromByteCode(util.getCodeFromChar("A") + getChessPosX(posDst) - constant.FILE_LEFT) +
-            util.getCharFromByteCode(util.getCodeFromChar("9") - getChessPosY(posDst) + constant.RANK_TOP);
-    }
-
-    /**
      * @method 显示着法
      */
     async onAddMove() {
@@ -317,7 +316,7 @@ export class Board {
         let space = (counter > 99 ? "    " : "   ");
         counter = (counter > 9 ? "" : " ") + counter + ".";
         let text = (this.pos.sdPlayer == 0 ? space : counter) +
-            this.move2Iccs(this.lastMotion);
+            this.pos.move2Iccs(this.lastMotion);
         let value = "" + this.lastMotion;
         await this.game_.onAddMove(text, value,)
     }

@@ -1,7 +1,6 @@
 "use strict";
 
 import * as position from "./position.js";
-import { shellSort } from "./util.js";
 
 // 不同的阶段
 const PHASE_HASH = 0;
@@ -9,6 +8,37 @@ const PHASE_KILLER_1 = 1;
 const PHASE_KILLER_2 = 2;
 const PHASE_GEN_MOVES = 3;
 const PHASE_REST = 4;
+
+/**
+ * @method 希尔排序
+ * @description 一次对两个数组同时排序
+ */
+function shellSort(mvs, vls) {
+    const SHELL_STEP = [0, 1, 4, 13, 40, 121, 364, 1093]; // 步长
+    // 寻找一个尽量大的步长
+    let stepLevel = 1;
+    while (SHELL_STEP[stepLevel] < mvs.length) {
+        stepLevel++;
+    }
+    stepLevel--;
+
+    while (stepLevel > 0) {
+        let step = SHELL_STEP[stepLevel];
+        for (let i = step; i < mvs.length; i++) {
+            let mvBest = mvs[i];
+            let vlBest = vls[i];
+            let j = i - step;
+            while (j >= 0 && vlBest > vls[j]) {
+                mvs[j + step] = mvs[j];
+                vls[j + step] = vls[j];
+                j -= step;
+            }
+            mvs[j + step] = mvBest;
+            vls[j + step] = vlBest;
+        }
+        stepLevel--;
+    }
+}
 
 class MoveSort {
     constructor(mvHash, pos, killerTable, historyTable) {
@@ -211,7 +241,7 @@ export class Search {
             mvs = this.pos.generateMoves(vls);
             shellSort(mvs, vls);
             for (let i = 0; i < mvs.length; i++) {
-                if (vls[i] < 10 || (vls[i] < 20 && position.isSelfHalf(position.getDstPosFromMotion(mvs[i]), this.pos.sdPlayer))) {
+                if (vls[i] < 10 || (vls[i] < 20 && this.pos.isSelfHalf(position.getDstPosFromMotion(mvs[i]), this.pos.sdPlayer))) {
                     mvs.length = i;
                     break;
                 }
