@@ -17,13 +17,22 @@ const WAV = Object.freeze({
     MOVE2: "move2",
 })
 
-export class GameAudio {
+export class GameAudio extends EventTarget{
     constructor(game, soundPath) {
-        this.game_ = game;
-        this.soundPath_ = soundPath;
+        super()
+
+        this._game = game;
+        this._soundPath = soundPath;
         this.dummy = document.createElement("div");
         this.dummy.style.position = "absolute";
         document.body.appendChild(this.dummy);
+
+        // NOTE 测试事件通知机制
+        this.addEventListener('test',(e)=>{
+            console.log(e.type, e.detail)
+        },false)
+
+        this.dispatchEvent(new CustomEvent('test', { detail: {name:"123"} }))
     }
 
     playDrawSound() {
@@ -75,15 +84,15 @@ export class GameAudio {
     }
 
     playSound(soundFile) {
-        if (!this.soundPath_ || !this.game_.getSound()) {
+        if (!this._soundPath || !this._game.getSound()) {
             return;
         }
         
         try {
-            new Audio(this.soundPath_ + soundFile + ".wav").play();
+            new Audio(this._soundPath + soundFile + ".wav").play();
         } catch (e) {
             this.dummy.innerHTML =
-                `<embed src="${this.soundPath_ + soundFile}.wav" hidden="true" autostart="true" loop="false"/>`;
+                `<embed src="${this._soundPath + soundFile}.wav" hidden="true" autostart="true" loop="false"/>`;
         }
     }
 }

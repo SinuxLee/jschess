@@ -41,9 +41,8 @@ const PIECE_NAME = [
 
 export class UIBoard {
     constructor(game, container, images) {
-        this.game_ = game;
-        this.container_ = container;
-        this.images_ = images;
+        this._game = game;
+        this._images = images;
 
         // 设置背景图片
         let style = container.style;
@@ -81,7 +80,7 @@ export class UIBoard {
             let that = this;
             img.onmousedown = function (sq_) {
                 return () => {
-                    that.game_.onSelectSquare(sq_);
+                    that._game.onSelectSquare(sq_);
                 }
             }(sq);
 
@@ -117,8 +116,8 @@ export class UIBoard {
      */
     drawSquare(sq, selected, piece) {
         let img = this.imgSquares[sq];
-        img.src = `${this.images_ + PIECE_NAME[piece]}.gif`;
-        img.style.backgroundImage = selected ? `url(${this.images_}oos.gif)` : "";
+        img.src = `${this._images + PIECE_NAME[piece]}.gif`;
+        img.style.backgroundImage = selected ? `url(${this._images}oos.gif)` : "";
         if (piece > 0) {
             // await this.sleepMS(20)
         }
@@ -167,7 +166,7 @@ export class UIBoard {
         }
         style.left = xMate + "px";
         style.zIndex = 0;
-        this.imgSquares[sqMate].src = this.images_ + sdPlayer + "km.gif";
+        this.imgSquares[sqMate].src = this._images + sdPlayer + "km.gif";
     }
 
     /**

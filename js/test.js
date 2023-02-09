@@ -1,6 +1,6 @@
 "use strict";
 
-let PUZZLE_LIST = [
+const puzzleList = [
     "9/2Cca4/3k1C3/4P1p2/4N1b2/4R1r2/4c1n2/3p1n3/2rNK4/9 w",
     "4C4/4a4/b2ank2b/9/9/1RNR1crC1/3r1p3/3cKA3/4A4/4n4 w",
     "9/4a4/3k1a3/2R3r2/1N5n1/C7c/1N5n1/2R3r2/3p1p3/4K4 w",
@@ -251,12 +251,12 @@ function test() {
         gened = 0,
         moved = 0,
         check = 0;
-    for (let i = 0; i < PUZZLE_LIST.length; i++) {
+    for (let i = 0; i < puzzleList.length; i++) {
         let curMoved = 0;
         let curChecked = 0;
         let curLegal = 0;
 
-        pos.fromFen(PUZZLE_LIST[i]);
+        pos.fromFen(puzzleList[i]);
         // 尝试移动每个棋子
         for (let posSrc = 0; posSrc < 256; posSrc++) {
             if (isChessOnBoard(posSrc)) {
@@ -282,7 +282,7 @@ function test() {
         check += curChecked;
         legal += curLegal;
 
-        console.log("test" + i + ", 合法:" + curLegal + ", shegnch:" + mvs.length + ", 可移动:" + curMoved + ", 校验:" + curChecked);
+        console.log("test" + i + ", 合法:" + curLegal + ", 生成:" + mvs.length + ", 可移动:" + curMoved + ", 校验:" + curChecked);
     }
     console.log("合法个数:" + legal + ", 生成的个数:" + gened + ", 可移动的个数:" + moved + ", 通过校验的个数:" + check);
 }

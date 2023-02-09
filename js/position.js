@@ -16,27 +16,10 @@ const ADVANCED_VALUE = 3;
 const ADD_PIECE = false; // 添加棋子
 const DEL_PIECE = true;  // 删除棋子
 
-// 老将的相对位移表
-const KING_DELTA = [-16, -1, 1, 16];
-
-// 士的相对位移表
-const ADVISOR_DELTA = [-17, -15, 15, 17];
-
-// 马的相对位移表
-const KNIGHT_DELTA = [
-    [-33, -31],
-    [-18, 14],
-    [-14, 18],
-    [31, 33]
-];
-
-// 马脚相对位移表
-const KNIGHT_CHECK_DELTA = [
-    [-33, -18],
-    [-31, -14],
-    [14, 31],
-    [18, 33]
-];
+const KING_DELTA = [-16, -1, 1, 16]; // 老将的相对位移表
+const ADVISOR_DELTA = [-17, -15, 15, 17]; // 士的相对位移表
+const KNIGHT_DELTA = [[-33, -31], [-18, 14], [-14, 18], [31, 33]]; // 马的相对位移表
+const KNIGHT_CHECK_DELTA = [[-33, -18], [-31, -14], [14, 31], [18, 33]]; // 马脚相对位移表
 
 // 我方棋子给对方棋子产生的威胁值，依次为对方的 将 士 相 马 车 炮 卒 
 const MVV_VALUE = [50, 10, 10, 30, 40, 30, 20];
@@ -485,10 +468,7 @@ export class Position {
      */
     clearBoard() {
         this.sdPlayer = 0;
-        this.squares = [];
-        for (let sq = 0; sq < 256; sq++) {
-            this.squares.push(0);
-        }
+        this.squares = new Array(256).fill(0);
         this.zobristKey = this.zobristLock = 0;
         this.vlWhite = this.vlBlack = 0;
     }
@@ -1069,6 +1049,11 @@ export class Position {
         return mvs;
     }
 
+    /**
+     * 是否合规着法
+     * @param {number} mv 
+     * @returns {bool} true-合规
+     */
     legalMove(mv) {
         let posSrc = getSrcPosFromMotion(mv);
         let pcSrc = this.squares[posSrc];
@@ -1138,14 +1123,17 @@ export class Position {
             if (this.squares[posSrc] != pcSelfSide + Piece.KING) {
                 continue;
             }
+
             if (this.squares[this.getForwardPosForPawn(posSrc, this.sdPlayer)] == pcOppSide + Piece.PAWN) {
                 return true;
             }
+
             for (let delta = -1; delta <= 1; delta += 2) {
                 if (this.squares[posSrc + delta] == pcOppSide + Piece.PAWN) {
                     return true;
                 }
             }
+
             for (let i = 0; i < 4; i++) {
                 if (this.squares[posSrc + ADVISOR_DELTA[i]] != 0) {
                     continue;
@@ -1157,6 +1145,7 @@ export class Position {
                     }
                 }
             }
+
             for (let i = 0; i < 4; i++) {
                 let delta = KING_DELTA[i];
                 let posDst = posSrc + delta;
@@ -1182,6 +1171,7 @@ export class Position {
                     posDst += delta;
                 }
             }
+
             return false;
         }
         return false;
@@ -1275,14 +1265,15 @@ export class Position {
     }
 
     mirror() {
-        let pos = new Position();
+        const pos = new Position();
         pos.clearBoard();
         for (let sq = 0; sq < 256; sq++) {
-            let pc = this.squares[sq];
+            const pc = this.squares[sq];
             if (pc > 0) {
                 pos.addPiece(this.getMirrorPosByX(sq), pc);
             }
         }
+        
         if (this.sdPlayer == 1) {
             pos.changeSide();
         }
@@ -1309,8 +1300,7 @@ export class Position {
         while (index >= 0 && BOOK_DAT[index][0] == lock) {
             index--;
         }
-        let mvs = [],
-            vls = [];
+        let mvs = [],vls = [];
         let value = 0;
         index++;
         while (index < BOOK_DAT.length && BOOK_DAT[index][0] == lock) {
