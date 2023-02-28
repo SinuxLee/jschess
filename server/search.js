@@ -1,5 +1,3 @@
-"use strict";
-
 import * as position from "./position.js";
 
 // 不同的阶段

@@ -1,26 +1,54 @@
 "use strict";
 
-import * as constant from "./constant.js";
-import * as util from "./util.js";
 import { getChessPosX, getChessPosY, isChessOnBoard } from "./position.js";
 
-export const STARTUP_FEN = [
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w", // 不让子
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKAB1R w", // 让左马
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/R1BAKAB1R w", // 让双马
-    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/9/1C5C1/9/RN2K2NR w", // 让九子
+/**
+ * UI中棋盘大小定义
+ */
+const UI_BOARD_WIDTH = 521; // 棋盘宽(px)
+const UI_BOARD_HEIGHT = 577; // 棋盘高
+
+/**
+ * UI中棋子大小定义
+ */
+const UI_CCHESS_SIZE = 57; // 棋子大小
+
+/**
+ * 棋盘四周空余大小
+ */
+const UI_BOARD_LEFT_LINE_POS = (UI_BOARD_WIDTH - UI_CCHESS_SIZE * 9) >> 1; // 最左侧线的位置
+const UI_BOARD_TOP_LINE_POS = (UI_BOARD_HEIGHT - UI_CCHESS_SIZE * 10) >> 1; // 最上方线的位置
+
+/**
+ * Loading 图大小及位置
+ */
+const UI_THINKING_SIZE = 32; // 菊花图片的大小
+const UI_THINKING_POS_LEFT = (UI_BOARD_WIDTH - UI_THINKING_SIZE) >> 1;
+const UI_THINKING_POS_TOP = (UI_BOARD_HEIGHT - UI_THINKING_SIZE) >> 1;
+
+// 动画最多拆分为8次移动
+const MAX_STEP = 8;
+
+/**
+ * 图片资源名字: r-车、n-马、b-相、a-士、c-炮、p-卒
+ */
+const PIECE_NAME = [
+    "oo", null, null, null, null, null, null, null, // [0, 7]
+    "rk", "ra", "rb", "rn", "rr", "rc", "rp", null, // [8, 15] 红方
+    "bk", "ba", "bb", "bn", "br", "bc", "bp", null, // [16, 24] 黑方
+    // 将,  士,   相,   马,   车,    炮,    卒
 ];
+
 export class UIBoard {
     constructor(game, container, images) {
-        this.game_ = game;
-        this.container_ = container;
-        this.images_ = images;
+        this._game = game;
+        this._images = images;
 
         // 设置背景图片
         let style = container.style;
         style.position = "relative";
-        style.width = constant.UI_BOARD_WIDTH + "px";
-        style.height = constant.UI_BOARD_HEIGHT + "px";
+        style.width = UI_BOARD_WIDTH + "px";
+        style.height = UI_BOARD_HEIGHT + "px";
         style.background = "url(" + images + "board.jpg)";
 
         // 思考缓冲图
@@ -29,8 +57,8 @@ export class UIBoard {
         let imgStyle = this.thinking.style;
         imgStyle.visibility = "hidden";
         imgStyle.position = "absolute";
-        imgStyle.left = constant.UI_THINKING_POS_LEFT + "px";
-        imgStyle.top = constant.UI_THINKING_POS_TOP + "px";
+        imgStyle.left = UI_THINKING_POS_LEFT + "px";
+        imgStyle.top = UI_THINKING_POS_TOP + "px";
         container.appendChild(this.thinking);
 
         // 棋子
@@ -46,13 +74,13 @@ export class UIBoard {
             style.position = "absolute";
             style.left = this.getUiXFromPos(sq) + "px";
             style.top = this.getUiYFromPos(sq) + "px";
-            style.width = constant.UI_CCHESS_SIZE + "px";
-            style.height = constant.UI_CCHESS_SIZE + "px";
+            style.width = UI_CCHESS_SIZE + "px";
+            style.height = UI_CCHESS_SIZE + "px";
             style.zIndex = 0;
             let that = this;
             img.onmousedown = function (sq_) {
                 return () => {
-                    that.game_.onSelectSquare(sq_);
+                    that._game.onSelectSquare(sq_);
                 }
             }(sq);
 
@@ -88,10 +116,10 @@ export class UIBoard {
      */
     drawSquare(sq, selected, piece) {
         let img = this.imgSquares[sq];
-        img.src = `${this.images_ + constant.PIECE_NAME[piece]}.gif`;
-        img.style.backgroundImage = selected ? `url(${this.images_}oos.gif)` : "";
+        img.src = `${this._images + PIECE_NAME[piece]}.gif`;
+        img.style.backgroundImage = selected ? `url(${this._images}oos.gif)` : "";
         if (piece > 0) {
-            // await util.sleepMS(20)
+            // await this.sleepMS(20)
         }
     }
 
@@ -115,9 +143,9 @@ export class UIBoard {
 
         let style = this.imgSquares[posSrc].style;
         style.zIndex = 256;
-        let step = constant.MAX_STEP - 1;
+        let step = MAX_STEP - 1;
         for (let i = 0; i < step; i++) {
-            await util.sleepMS(16)
+            await this.sleepMS(16)
             style.left = this.getMotionPixelByStep(xSrc, xDst, step);
             style.top = this.getMotionPixelByStep(ySrc, yDst, step);
         }
@@ -131,14 +159,14 @@ export class UIBoard {
         let style = this.imgSquares[sqMate].style;
         style.zIndex = 256;
         let xMate = this.getUiXFromPos(sqMate);
-        let step = constant.MAX_STEP;
+        let step = MAX_STEP;
         for (let i = 0; i < step; i++) {
-            await util.sleepMS(50);
+            await this.sleepMS(50);
             style.left = (xMate + ((step & 1) == 0 ? step : -step) * 2) + "px";
         }
         style.left = xMate + "px";
         style.zIndex = 0;
-        this.imgSquares[sqMate].src = this.images_ + sdPlayer + "km.gif";
+        this.imgSquares[sqMate].src = this._images + sdPlayer + "km.gif";
     }
 
     /**
@@ -167,12 +195,18 @@ export class UIBoard {
         }, delay);
     }
 
+    async sleepMS(ms){
+        return new Promise(function(resolve){
+            setTimeout(resolve,ms)
+        })
+    }
+
     /**
      * @method 获取棋子在界面中的X坐标
      * @param {number} pos 
      */
     getUiXFromPos(pos) {
-        return constant.UI_BOARD_LEFT_LINE_POS + (getChessPosX(pos) - 3) * constant.UI_CCHESS_SIZE;
+        return UI_BOARD_LEFT_LINE_POS + (getChessPosX(pos) - 3) * UI_CCHESS_SIZE;
     }
 
     /**
@@ -180,7 +214,7 @@ export class UIBoard {
      * @param {number} pos 
      */
     getUiYFromPos(pos) {
-        return constant.UI_BOARD_TOP_LINE_POS + (getChessPosY(pos) - 3) * constant.UI_CCHESS_SIZE;
+        return UI_BOARD_TOP_LINE_POS + (getChessPosY(pos) - 3) * UI_CCHESS_SIZE;
     }
 
     /**
@@ -190,6 +224,6 @@ export class UIBoard {
      * @param {number} step 步长,越来越小就形成了从src到dst的动画
      */
     async getMotionPixelByStep(src, dst, step) {
-        return Math.floor((src * step + dst * (constant.MAX_STEP - step)) / constant.MAX_STEP + 0.5) + "px";
+        return Math.floor((src * step + dst * (MAX_STEP - step)) / MAX_STEP + 0.5) + "px";
     }
 }

@@ -20,17 +20,23 @@
  * 
  * Desk --> Player --> Board --> Piece      Rule    AI
  * |        |           |          |        |       |
- * 维持     保存        保存        走棋    附加    计算
- * 游戏     玩家        棋子        基本    规则    下一步棋
- * 流程     信息        走棋信息    规则
+ * 维持     保存        保存        走棋      附加    计算
+ * 游戏     玩家        棋子        基本      规则    下一步棋
+ * 流程     信息        走棋信息     规则
  */
 
 "use strict";
 
 import { GameAudio } from "./audio.js";
 import { Board } from "./board.js";
-import { UIBoard, STARTUP_FEN } from "./ui.js"
-import * as constant from "./constant.js";
+import { UIBoard } from "./ui.js"
+
+const STARTUP_FEN = [
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w", // 不让子
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKAB1R w", // 让左马
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/R1BAKAB1R w", // 让双马
+    "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/9/1C5C1/9/RN2K2NR w", // 让九子
+];
 
 export class Game {
     static getInstance() {
@@ -42,39 +48,35 @@ export class Game {
     }
 
     constructor() {
-        this.imagePath_ = "images/";
-        this.soundPath_ = "sounds/";
+        this._imagePath = "images/";
+        this._soundPath = "sounds/";
 
-        this.audio_ =  new GameAudio(this, container, this.soundPath_);
-        this.board_ = new Board(this);
-        this.uiBoard_ = new UIBoard(this, container, this.imagePath_);
+        this._audio =  new GameAudio(this, this._soundPath);
+        this._board = new Board(this);
+        this._uiBoard = new UIBoard(this, container, this._imagePath);
 
         // 初始化棋盘模型
-        this.board_.initBoard();
-        this.board_.setSearch(16);
-        this.board_.millis = 10;
-        this.board_.computer = 1;
-
-        
+        this._board.initBoard(10,1);
+        this._board.setSearch(16);
 
         this.sound = true; // 声音开关
         this.animated = true; // 动画开关
     }
 
     setMaxThinkTimeMs(millis) {
-        this.board_.millis = millis;
+        this._board.millis = millis;
     }
 
     restartGame(strFen) {
-        this.board_.restart(strFen)
+        this._board.restart(strFen)
     }
 
     getBoard() {
-        return this.board_;
+        return this._board;
     }
 
     onIllegalMove() {
-        this.audio_.playIllegalSound();
+        this._audio.playIllegalSound();
     }
 
     /**
@@ -82,10 +84,10 @@ export class Game {
      * @param {number} reason 输的原因，0-正常打输了, 1-我方长将/长捉
      */
     onLose(reason) {
-        this.audio_.playLoseSound();
+        this._audio.playLoseSound();
         let rea = reason || 0; // 默认为正常输
         if (1 == rea) {
-            this.uiBoard_.alertDelay("长打作负，请不要气馁！");
+            this._uiBoard.alertDelay("长打作负，请不要气馁！");
         }
     }
 
@@ -94,10 +96,10 @@ export class Game {
      * @param {number} reason 0-正常打赢, 1-对方长捉/长将
      */
     onWin(reason) {
-        this.audio_.playWinSound();
+        this._audio.playWinSound();
         let rea = reason || 0;
         if (1 == rea) {
-            this.uiBoard_.alertDelay("长打作负，祝贺你取得胜利！");
+            this._uiBoard.alertDelay("长打作负，祝贺你取得胜利！");
         }
     }
 
@@ -106,56 +108,56 @@ export class Game {
      * @param {number} reason,0-不变着法, 1-双方没有进攻棋子了
      */
     onDraw(reason) {
-        this.audio_.playDrawSound();
+        this._audio.playDrawSound();
         if (0 == reason) {
-            this.uiBoard_.alertDelay("双方不变作和，辛苦了！");
+            this._uiBoard.alertDelay("双方不变作和，辛苦了！");
         } else if (1 == reason) {
-            this.uiBoard_.alertDelay("双方都没有进攻棋子了，辛苦了！");
+            this._uiBoard.alertDelay("双方都没有进攻棋子了，辛苦了！");
         } else if (2 == reason) {
-            this.uiBoard_.alertDelay("超过自然限着作和，辛苦了！");
+            this._uiBoard.alertDelay("超过自然限着作和，辛苦了！");
         }
     }
 
     onOver(isWin){
-        this.uiBoard_.alertDelay(isWin ? "请再接再厉！" : "祝贺你取得胜利！");
+        this._uiBoard.alertDelay(isWin ? "请再接再厉！" : "祝贺你取得胜利！");
     }
 
     onClickChess() {
-        this.audio_.playClickSound();
+        this._audio.playClickSound();
     }
 
     onCheck() {
-        this.audio_.playCheckSound();
+        this._audio.playCheckSound();
     }
 
     onAICheck() {
-        this.audio_.playAICheckSound();
+        this._audio.playAICheckSound();
     }
 
     onCapture() {
-        this.audio_.playCaptureSound();
+        this._audio.playCaptureSound();
     }
 
     onAICapture() {
-        this.audio_.playAIMoveSound();
+        this._audio.playAIMoveSound();
     }
 
     onMove() {
-        this.audio_.playMoveSound();
+        this._audio.playMoveSound();
     }
 
     onAIMove() {
-        this.audio_.playAIMoveSound();
+        this._audio.playAIMoveSound();
     }
 
     onNewGame() {
-        this.audio_.playNewGameSound();
+        this._audio.playNewGameSound();
     }
 
     setSound(sound) {
         this.sound = sound;
         if (sound) {
-            this.audio_.playClickSound();
+            this._audio.playClickSound();
         }
     }
 
@@ -172,11 +174,11 @@ export class Game {
     }
 
     beginThinking() {
-        this.uiBoard_.showThinkBox();
+        this._uiBoard.showThinkBox();
     }
 
     endThinking() {
-        this.uiBoard_.hideThinkBox();
+        this._uiBoard.hideThinkBox();
     }
 
     /**
@@ -185,7 +187,7 @@ export class Game {
     onClickRestart() {
         selMoveList.options.length = 1;
         selMoveList.selectedIndex = 0;
-        this.board_.computer = 1 - selMoveMode.selectedIndex;
+        this._board.computer = 1 - selMoveMode.selectedIndex;
         this.restartGame(STARTUP_FEN[selHandicap.selectedIndex]);
     }
 
@@ -193,11 +195,11 @@ export class Game {
      * @method 点击悔棋
      */
     onClickRetract() {
-        for (let i = this.board_.pos.motionList.length; i < selMoveList.options.length; i++) {
-            this.board_.pos.makeMove(parseInt(selMoveList.options[i].value));
+        for (let i = this._board.pos.motionList.length; i < selMoveList.options.length; i++) {
+            this._board.pos.makeMove(parseInt(selMoveList.options[i].value));
         }
-        this.board_.retract();
-        selMoveList.options.length = this.board_.pos.motionList.length;
+        this._board.retract();
+        selMoveList.options.length = this._board.pos.motionList.length;
         selMoveList.selectedIndex = selMoveList.options.length - 1;
     }
 
@@ -213,16 +215,18 @@ export class Game {
      * @method 走棋记录有变更
      */
     onRecordListChange() {
-        let board = Game.getInstance().getBoard();
-        if (board.result == constant.RESULT_INIT) {
+        const board = this.getBoard();
+        if (board.isInit()) {
             selMoveList.selectedIndex = selMoveList.options.length - 1;
             return;
         }
+
         let from = board.pos.motionList.length;
         let to = selMoveList.selectedIndex;
         if (from == to + 1) {
             return;
         }
+
         if (from > to + 1) {
             for (let i = to + 1; i < from; i++) {
                 board.pos.undoMakeMove();
@@ -239,7 +243,7 @@ export class Game {
      * 刷新棋盘UI
      */
     onFlushBoard() {
-        this.uiBoard_.flushBoard();
+        this._uiBoard.flushBoard();
     }
 
     /**
@@ -248,22 +252,22 @@ export class Game {
      * @param {boolean} selected 是否选中状态 0-未选中, 1-选中
      */
     onDrawSquare(sq, selected, piece){
-        this.uiBoard_.drawSquare(sq, selected, piece)
+        this._uiBoard.drawSquare(sq, selected, piece)
     }
 
     async onAddMove(text, value,){
-        await this.uiBoard_.addMove(text, value,)
+        await this._uiBoard.addMove(text, value,)
     }
 
     async onMovePiece(posSrc, posDst){
-        await this.uiBoard_.fakeAnimation(posSrc, posDst);
+        await this._uiBoard.fakeAnimation(posSrc, posDst);
     }
 
     async onMate(sqMate,sdPlayer){
-        await this.uiBoard_.onMate(sqMate,sdPlayer);
+        await this._uiBoard.onMate(sqMate,sdPlayer);
     }
 
     async onSelectSquare(sq){
-        await this.board_.selectedSquare(sq)
+        await this._board.selectedSquare(sq)
     }
 }

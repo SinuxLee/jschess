@@ -1,4 +1,11 @@
-"use strict";
+import {WorkerPool} from './workerpool.js' // 也可以使用 piscina
+import {join, dirname} from 'path'
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const workerPath = join(__dirname + '/worker.js');
+const workers = new WorkerPool(workerPath,6);
 
 const puzzleList = [
     "9/2Cca4/3k1C3/4P1p2/4N1b2/4R1r2/4c1n2/3p1n3/2rNK4/9 w",
@@ -243,48 +250,10 @@ const puzzleList = [
     "3ak1b1r/4a2Pn/4b4/4C4/9/9/cR7/n8/4A1p2/3AKC3 w",
 ];
 
-import { isChessOnBoard, Position } from "./position.js";
 
-function test() {
-    let pos = new Position();
-    let legal = 0,
-        gened = 0,
-        moved = 0,
-        check = 0;
-    for (let i = 0; i < puzzleList.length; i++) {
-        let curMoved = 0;
-        let curChecked = 0;
-        let curLegal = 0;
-
-        pos.fromFen(puzzleList[i]);
-        // 尝试移动每个棋子
-        for (let posSrc = 0; posSrc < 256; posSrc++) {
-            if (isChessOnBoard(posSrc)) {
-                for (let posDst = 0; posDst < 256; posDst++) {
-                    if (isChessOnBoard(posDst)) {
-                        // 尝试将当前棋子移动到其它位置
-                        curLegal += (pos.legalMove(pos.makeMotionBySrcDst(posSrc, posDst)) ? 1 : 0);
-                    }
-                }
-            }
-        }
-
-        let mvs = pos.generateMoves(null); // 产生可行的着法
-        for (let j = 0; j < mvs.length; j++) {
-            if (pos.makeMove(mvs[j])) {
-                curMoved++;
-                curChecked += (pos.inCheck() ? 1 : 0);
-                pos.undoMakeMove();
-            }
-        }
-        gened += mvs.length;
-        moved += curMoved;
-        check += curChecked;
-        legal += curLegal;
-
-        console.log("test" + i + ", 合法:" + curLegal + ", 生成:" + mvs.length + ", 可移动:" + curMoved + ", 校验:" + curChecked);
-    }
-    console.log("合法个数:" + legal + ", 生成的个数:" + gened + ", 可移动的个数:" + moved + ", 通过校验的个数:" + check);
+for (const val of puzzleList) {
+    const ret = await workers.run(val)
+    console.log(ret)
 }
 
-test();
+workers.destroy();
