@@ -32,3 +32,4 @@
 - [ ] 用脚本自动生成 book.js
 - [ ] board -> desk, position -> board
 - [ ] search -> ai, 可以启动多个AI。左右互搏，哈哈
+- [ ] 使用 Web Worker 计算最佳着法

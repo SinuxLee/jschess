@@ -1,5 +1,3 @@
-"use strict";
-
 import { BOOK_DAT } from "./book.js";
 
 // fen 格式化
@@ -732,7 +730,6 @@ export class Position {
             this.undoMovePiece(mv);
             return false;
         }
-        
         this.keyList.push(zobristKey);
         this.changeSide();
         this.chkList.push(this.checked());
