@@ -9,6 +9,16 @@
 <body>
     <div id="game_title">中国象棋</div>
     <div id="game_zone">
+        <!-- 走棋列表 -->
+        <div id="moves_container">
+            <div class="label">步骤</div>
+            <div>
+                <select id="selMoveList" size="7" onchange="game.onRecordListChange()">
+                    <option selected value="0">=== 开始 ===</option>
+                </select>
+            </div>
+        </div>
+
         <!-- 棋盘 -->
         <div id="game_board">
             <div id="container"></div>
@@ -17,7 +27,8 @@
         <!-- 菜单 -->
         <div id="game_menu">
             <div class="label">谁先走</div>
-            <div><select id="selMoveMode" size="3">
+            <div>
+                <select id="selMoveMode" size="3">
                     <option selected value="0">我先走</option>
                     <option value="1">电脑先走</option>
                     <option value="2">不用电脑</option>
@@ -25,12 +36,14 @@
             </div>
             </br>
             <div class="label">先走让子</div>
-            <div><select id="selHandicap">
+            <div>
+                <select id="selHandicap">
                     <option selected value="0">不让子</option>
                     <option value="1">让左马</option>
                     <option value="2">让双马</option>
                     <option value="3">让九子</option>
-                </select></div>
+                </select>
+            </div>
 
             <div class="top_space">
                 <input type="button" class="button" value="重新开始" onclick="game.onClickRestart()">
@@ -42,30 +55,23 @@
             <div class="game_space"></div>
 
             <div class="label">电脑水平</div>
-            <div><select id="selLevel" size="3" onchange="game.onClickLevelChange()">
+            <div>
+                <select id="selLevel" size="3" onchange="game.onClickLevelChange()">
                     <option selected value="0">入门</option>
                     <option value="1">业余</option>
                     <option value="2">专业</option>
-                </select></div>
-
-            <div class="game_space"></div>
-
-            <div>
-                <input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="game.setAnimated(checked)" />
-                <label for="chkAnimated">动画</label>
-            </div>
-            <div>
-                <input type="checkbox" class="checkbox" checked onclick="game.setSound(checked)" />
-                <label for="chkSound">音效</label>
-            </div>
-
-            <div class="game_space"></div>
-
-            <div class="label">步骤</div>
-            <div>
-                <select id="selMoveList" size="7" onchange="game.onRecordListChange()">
-                    <option selected value="0">=== 开始 ===</option>
                 </select>
+            </div>
+
+            <div class="game_space"></div>
+
+            <div class="checkbox-container">
+                <input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="game.setAnimated(checked)" />
+                <label for="chkAnimated">动画效果</label>
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" class="checkbox" id="chkSound" checked onclick="game.setSound(checked)" />
+                <label for="chkSound">音效</label>
             </div>
         </div>
     </div>

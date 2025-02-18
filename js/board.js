@@ -36,7 +36,7 @@ export class Board {
         this.busy = false; // 是否思考中
     }
 
-    initBoard(thinking,computer) {
+    initBoard(thinking = 10, computer = 1) {
         this.millis = thinking;
         this.computer = computer;
         this.lastMotion = 0; // 最后一步棋
@@ -229,7 +229,7 @@ export class Board {
 
         this._game.beginThinking();
         this.busy = true;
-        setTimeout(async () =>{
+        setTimeout(async () => {
             await this.addMove(this.search.searchMain(LIMIT_DEPTH, this.millis), true);
             this._game.endThinking();
         }, 50); // TODO: 根据人类选手的响应时间，计算机器人的思考时间。模拟人类的情绪波动（盲目自信走错棋）
