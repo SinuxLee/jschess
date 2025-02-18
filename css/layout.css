@@ -1,12 +1,15 @@
 * {
-    margin: 0px;
-    padding: 0px;
-    border: 0px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
 }
 
 body {
-    background: url("../images/background.gif");
+    background: #f5f5f5;
     margin: 0 auto;
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    color: #333;
 }
 
 span.td {
@@ -14,23 +17,66 @@ span.td {
 }
 
 div.label {
-    font-size: 14px;
-    padding: 2px;
+    font-size: 20px;
+    margin: 16px 0 8px;
+    color: #333;
 }
 
 select {
-    font-size: 14px;
-    width: 108px;
-    padding: 2px;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 18px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    margin-bottom: 20px;
+    cursor: pointer;
+    color: #333;
+}
+
+select:hover {
+    border-color: #c41e3a;
 }
 
 option {
     font-size: 14px;
+    padding: 8px 12px;
+    background: #fff;
+    color: #333;
+}
+
+option:checked {
+    background: #c41e3a;
+    color: #fff;
+}
+
+option:hover {
+    background: #f0f0f0;
+}
+
+/* 特别处理多行选择框 */
+select[size] {
+    min-height: 120px;
 }
 
 input.button {
-    font-size: 14px;
-    width: 108px;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 18px;
+    color: #fff;
+    background: #c41e3a;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+input.button:hover {
+    background: #a01830;
+    transform: translateY(-1px);
 }
 
 label {
@@ -38,44 +84,120 @@ label {
 }
 
 #game_title {
-    margin-top: 10px;
-    margin-bottom: 20px;
-    height: 20px;
+    margin: 32px auto;
+    height: 60px;
     width: 100%;
     text-align: center;
-    font-size: 28px;
-    font-family: 黑体;
+    font-size: 48px;
+    font-weight: bold;
+    color: #c41e3a;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.12);
+    letter-spacing: 4px;
 }
 
 .game_space {
-    height: 20px;
+    height: 10px;
 }
 
 .top_space {
-    padding-top: 2px
+    padding-top: 12px;
 }
 
+/* 修改游戏区域布局 */
 #game_zone {
+    max-width: 1360px;
     margin: 0 auto;
-    text-align: center;
-    white-space: nowrap;
-    float: left;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    flex-wrap: nowrap;
+    gap: 24px;
 }
 
-#game_board {
-    margin-left: 300px;
-    margin-right: 10px;
-    float: left;
+/* 新增走棋列表容器样式 */
+#moves_container {
+    width: 240px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    flex-shrink: 0;
 }
 
-#game_menu {
-    vertical-align: top;
-    width: 120px;
-    float: left;
-    text-align: left
-}
-
+/* 调整走棋列表样式 */
 #selMoveList {
-    width: 100px;
+    width: 100%;
     font-family: "宋体";
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    height: 700px;
+    overflow-y: auto;
+    font-size: 18px;
+}
+
+/* 添加棋盘容器的样式 */
+#container {
+    position: relative;
+    width: 521px;
+    height: 577px;
+    transform-origin: top left;
+    transform: scale(1.37);
+}
+
+/* 调整棋盘区域样式，考虑 transform 后的实际尺寸 */
+#game_board {
+    margin: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 8px;
+    width: 730px;
+    height: 808px;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* 调整菜单区域样式 */
+#game_menu {
+    width: 240px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+/* 复选框容器 */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin: 12px 0;
+}
+
+/* 复选框样式 */
+input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+/* 特别处理移动模式选择框 */
+#selMoveMode {
+    margin-bottom: 15px;
+}
+
+/* 特别处理水平选择框 */
+#selLevel {
+    margin-bottom: 15px;
+}
+
+/* 让子选择框 */
+#selHandicap {
+    margin-bottom: 15px;
+}
+
+/* 调整按钮和选择框的字体大小 */
+select, input.button, option, div.label {
+    font-size: 16px;
 }
