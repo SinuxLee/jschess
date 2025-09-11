@@ -251,9 +251,16 @@ const puzzleList = [
 ];
 
 
+const promiseList = []
+
 for (const val of puzzleList) {
-    const ret = await workers.run(val)
-    console.log(ret)
+    promiseList.push(workers.run(val))
 }
 
-workers.destroy();
+Promise.all(promiseList).then(list => {
+    for (const ret of list) {
+        console.log(ret)
+    }
+
+    workers.destroy();
+})
