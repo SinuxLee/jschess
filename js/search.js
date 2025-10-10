@@ -14,7 +14,7 @@ const PHASE_REST = 4;
  * @description 一次对两个数组同时排序
  */
 function shellSort(mvs, vls) {
-    const SHELL_STEP = [0, 1, 4, 13, 40, 121, 364, 1093]; // 步长
+    const SHELL_STEP = [0, 1, 4, 13, 40, 121, 364, 1093]; // 步长, Knuth 序列
     // 寻找一个尽量大的步长
     let stepLevel = 1;
     while (SHELL_STEP[stepLevel] < mvs.length) {
