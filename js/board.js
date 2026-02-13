@@ -18,6 +18,13 @@ const Result = Object.freeze({
     LOSS: 3,    // 输
 })
 
+// 棋盘状态
+const State = Object.freeze({
+    IDLE: 0,        // 空闲，等待玩家操作
+    ANIMATING: 1,   // 走子动画播放中
+    THINKING: 2,    // AI 搜索中
+})
+
 /**
  * @class Board
  * @classdesc 棋盘
@@ -33,7 +40,11 @@ export class Board {
         this.sqSelected = 0; // 被选中的棋子
         this.millis = 0; // 思考的时间
         this.computer = -1; // 机器人开关, -1 - 不用机器, 0 - 机器人红方, 1 - 机器人黑方
-        this.busy = false; // 是否思考中
+        this._state = State.IDLE;
+    }
+
+    get busy() {
+        return this._state !== State.IDLE;
     }
 
     initBoard(thinking = 10, computer = 1) {
@@ -85,17 +96,18 @@ export class Board {
             return;
         }
 
-        this.busy = true;
-        if (!this._game.getAnimated()) {
+        this._state = State.ANIMATING;
+        try {
+            if (this._game.getAnimated()) {
+                let posSrc = this.flipped(getSrcPosFromMotion(mv));
+                let posDst = this.flipped(getDstPosFromMotion(mv));
+                await this._game.onMovePiece(posSrc, posDst);
+            }
             await this.postAddMove(mv, computerMove);
-            return;
+        } catch (e) {
+            this._state = State.IDLE;
+            throw e;
         }
-
-        let posSrc = this.flipped(getSrcPosFromMotion(mv));
-        let posDst = this.flipped(getDstPosFromMotion(mv));
-        await this._game.onMovePiece(posSrc, posDst)
-
-        await this.postAddMove(mv, computerMove);
     }
 
     async postAddMove(mv, computerMove) {
@@ -152,7 +164,7 @@ export class Board {
                 this.result = Result.WIN;
             }
             await this.onAddMove();
-            this.busy = false;
+            this._state = State.IDLE;
             return;
         }
 
@@ -168,7 +180,7 @@ export class Board {
                 this._game.onDraw(1);
                 this.result = Result.DRAW;
                 await this.onAddMove();
-                this.busy = false;
+                this._state = State.IDLE;
                 return;
             }
         } else if (this.pos.pcList.length > 100) {
@@ -183,7 +195,7 @@ export class Board {
                 this._game.onDraw(2);
                 this.result = Result.DRAW;
                 await this.onAddMove();
-                this.busy = false;
+                this._state = State.IDLE;
                 return;
             }
         }
@@ -215,7 +227,7 @@ export class Board {
     async postMate(computerMove) {
         this._game.onOver(computerMove)
         await this.onAddMove();
-        this.busy = false;
+        this._state = State.IDLE;
     }
 
     /**
@@ -223,15 +235,21 @@ export class Board {
      */
     response() {
         if (this.search == null || !this.computerMove()) {
-            this.busy = false;
+            this._state = State.IDLE;
             return;
         }
 
         this._game.beginThinking();
-        this.busy = true;
+        this._state = State.THINKING;
         setTimeout(async () => {
-            await this.addMove(this.search.searchMain(LIMIT_DEPTH, this.millis), true);
-            this._game.endThinking();
+            try {
+                await this.addMove(this.search.searchMain(LIMIT_DEPTH, this.millis), true);
+            } catch (e) {
+                this._state = State.IDLE;
+                throw e;
+            } finally {
+                this._game.endThinking();
+            }
         }, 50); // TODO: 根据人类选手的响应时间，计算机器人的思考时间。模拟人类的情绪波动（盲目自信走错棋）
     }
 
