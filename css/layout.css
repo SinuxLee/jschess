@@ -201,3 +201,28 @@ input[type="checkbox"] {
 select, input.button, option, div.label {
     font-size: 16px;
 }
+
+/* Toast 通知 */
+.toast-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+}

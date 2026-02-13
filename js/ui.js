@@ -71,6 +71,7 @@ export class UIBoard {
                 continue;
             }
             let img = document.createElement("img");
+            img.dataset.sq = sq;
             let style = img.style;
             style.position = "absolute";
             style.left = this.getUiXFromPos(sq) + "px";
@@ -78,16 +79,17 @@ export class UIBoard {
             style.width = UI_CCHESS_SIZE + "px";
             style.height = UI_CCHESS_SIZE + "px";
             style.zIndex = 0;
-            let that = this;
-            img.onmousedown = function (sq_) {
-                return () => {
-                    that._onSelect(sq_);
-                }
-            }(sq);
 
             container.appendChild(img);
             this.imgSquares.push(img);
         }
+
+        container.addEventListener('mousedown', (e) => {
+            let img = e.target;
+            if (img.tagName === 'IMG' && img.dataset.sq !== undefined) {
+                this._onSelect(Number(img.dataset.sq));
+            }
+        });
 
     }
 
@@ -128,12 +130,12 @@ export class UIBoard {
     }
 
     // 添加着法
-    async addMove(text, value,) {
-        try {
-            this._selMoveList.add(this.createOption(text, value, false));
-        } catch (e) {
-            this._selMoveList.add(this.createOption(text, value, true));
-        }
+    async addMove(text, value) {
+        let opt = document.createElement('option');
+        opt.selected = true;
+        opt.value = value;
+        opt.innerHTML = text.replace(/ /g, '&nbsp;');
+        this._selMoveList.add(opt);
         this._selMoveList.scrollTop = this._selMoveList.scrollHeight;
     }
 
@@ -176,29 +178,24 @@ export class UIBoard {
     }
 
     /**
-     * 在ui中添加走棋着法
-     */
-    createOption(text, value, ie8) {
-        let opt = document.createElement("option");
-        opt.selected = true;
-        opt.value = value;
-        if (ie8) {
-            opt.text = text;
-        } else {
-            opt.innerHTML = text.replace(/ /g, "&nbsp;");
-        }
-        return opt;
-    }
-
-    /**
      * @method 消息窗
      * @param {string} message 
      */
-    async alertDelay(message, time) {
-        let delay = time || 100;
-        setTimeout(function () {
-            alert(message);
-        }, delay);
+    showToast(message, duration) {
+        let ms = duration || 2000;
+        let el = document.createElement('div');
+        el.className = 'toast-notification';
+        el.textContent = message;
+        document.body.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('show'));
+        setTimeout(() => {
+            el.classList.remove('show');
+            setTimeout(() => el.remove(), 300);
+        }, ms);
+    }
+
+    async alertDelay(message) {
+        this.showToast(message);
     }
 
     async sleepMS(ms){
