@@ -1,5 +1,5 @@
-import {Search} from './search.js'
-import { Position } from './position.js'
+import { Search } from '../js/search.js'
+import { Position } from '../js/position.js'
 import { isMainThread, parentPort } from 'worker_threads'
 
 if (isMainThread) throw new Error('can not run in main thread');
