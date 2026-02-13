@@ -130,6 +130,17 @@ export class Search {
     constructor(pos, hashLevel) {
         this.hashMask = (1 << hashLevel) - 1;
         this.pos = pos;
+        // 置换表在构造时初始化，跨步保留以提升搜索效率
+        this.hashTable = [];
+        for (let i = 0; i <= this.hashMask; i++) {
+            this.hashTable.push({
+                depth: 0,
+                flag: 0,
+                vl: 0,
+                mv: 0,
+                zobristLock: 0
+            });
+        }
     }
 
     getHashItem() {
@@ -403,16 +414,6 @@ export class Search {
                 return this.mvResult;
             }
             this.pos.undoMakeMove();
-        }
-        this.hashTable = [];
-        for (let i = 0; i <= this.hashMask; i++) {
-            this.hashTable.push({
-                depth: 0,
-                flag: 0,
-                vl: 0,
-                mv: 0,
-                zobristLock: 0
-            });
         }
         this.killerTable = [];
         for (let i = 0; i < LIMIT_DEPTH; i++) {
