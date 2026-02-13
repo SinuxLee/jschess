@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * 音频处理
  */
@@ -26,13 +28,6 @@ export class GameAudio extends EventTarget{
         this.dummy = document.createElement("div");
         this.dummy.style.position = "absolute";
         document.body.appendChild(this.dummy);
-
-        // NOTE 测试事件通知机制
-        this.addEventListener('test',(e)=>{
-            console.log(e.type, e.detail)
-        },false)
-
-        this.dispatchEvent(new CustomEvent('test', { detail: {name:"123"} }))
     }
 
     playDrawSound() {

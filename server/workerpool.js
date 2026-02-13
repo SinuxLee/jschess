@@ -100,7 +100,7 @@ export class WorkerPool {
         data,
         cb: (error, result) => {
           if (error) {
-            reject(error);
+            return reject(error);
           }
 
           return resolve(result);
@@ -121,7 +121,7 @@ export class WorkerPool {
   destroy(force = false) {
     for (let i = 0; i < this.numberOfThreads; i++) {
       if (this._activeWorkersById[i] && !force) {
-        throw new Error(`The worker ${i} is still runing!`);
+        throw new Error(`The worker ${i} is still running!`);
       }
 
       // Terminate the worker

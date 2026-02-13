@@ -40,9 +40,10 @@ const PIECE_NAME = [
 ];
 
 export class UIBoard {
-    constructor(game, container, images) {
+    constructor(game, container, images, selMoveList) {
         this._game = game;
         this._images = images;
+        this._selMoveList = selMoveList;
 
         // 设置背景图片
         let style = container.style;
@@ -100,11 +101,14 @@ export class UIBoard {
 
     /**
      * @method 刷新棋盘
+     * @description 暂未使用，保留接口
      */
-    flushBoard() {
+    flushBoard(pos, lastMotion) {
         for (let sq = 0; sq < 256; sq++) {
             if (isChessOnBoard(sq)) {
-                this.drawSquare(sq, sq == getSrcPosFromMotion(this.lastMotion) || sq == getDstPosFromMotion(this.lastMotion));
+                let selected = (lastMotion > 0) &&
+                    (sq === (lastMotion & 0xFF) || sq === ((lastMotion >> 8) & 0xFF));
+                this.drawSquare(sq, selected, pos.squares[sq]);
             }
         }
     }
@@ -126,11 +130,11 @@ export class UIBoard {
     // 添加着法
     async addMove(text, value,) {
         try {
-            selMoveList.add(this.createOption(text, value, false));
+            this._selMoveList.add(this.createOption(text, value, false));
         } catch (e) {
-            selMoveList.add(this.createOption(text, value, true));
+            this._selMoveList.add(this.createOption(text, value, true));
         }
-        selMoveList.scrollTop = selMoveList.scrollHeight;
+        this._selMoveList.scrollTop = this._selMoveList.scrollHeight;
     }
 
     // 模拟动画
@@ -144,12 +148,14 @@ export class UIBoard {
         let style = this.imgSquares[posSrc].style;
         style.zIndex = 256;
         let step = MAX_STEP - 1;
-        for (let i = 0; i < step; i++) {
-            await this.sleepMS(16)
-            style.left = this.getMotionPixelByStep(xSrc, xDst, step);
-            style.top = this.getMotionPixelByStep(ySrc, yDst, step);
+        for (let i = step; i > 0; i--) {
+            await this.sleepMS(16);
+            style.left = this.getMotionPixelByStep(xSrc, xDst, i);
+            style.top = this.getMotionPixelByStep(ySrc, yDst, i);
         }
 
+        // 动画结束后，将源格图片位置重置回源格坐标，
+        // 避免 img 元素永久留在目标位置导致事件遮挡
         style.left = xSrc + "px";
         style.top = ySrc + "px";
         style.zIndex = 0;
@@ -162,7 +168,7 @@ export class UIBoard {
         let step = MAX_STEP;
         for (let i = 0; i < step; i++) {
             await this.sleepMS(50);
-            style.left = (xMate + ((step & 1) == 0 ? step : -step) * 2) + "px";
+            style.left = (xMate + ((i & 1) === 0 ? i : -i) * 2) + "px";
         }
         style.left = xMate + "px";
         style.zIndex = 0;
@@ -223,7 +229,7 @@ export class UIBoard {
      * @param {number} dst 
      * @param {number} step 步长,越来越小就形成了从src到dst的动画
      */
-    async getMotionPixelByStep(src, dst, step) {
+    getMotionPixelByStep(src, dst, step) {
         return Math.floor((src * step + dst * (MAX_STEP - step)) / MAX_STEP + 0.5) + "px";
     }
 }

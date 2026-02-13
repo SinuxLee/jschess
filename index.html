@@ -34,7 +34,7 @@
                     <option value="2">不用电脑</option>
                 </select>
             </div>
-            </br>
+            <br>
             <div class="label">先走让子</div>
             <div>
                 <select id="selHandicap">
@@ -66,11 +66,11 @@
             <div class="game_space"></div>
 
             <div class="checkbox-container">
-                <input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="game.setAnimated(checked)" />
+                <input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="game.setAnimated(this.checked)" />
                 <label for="chkAnimated">动画效果</label>
             </div>
             <div class="checkbox-container">
-                <input type="checkbox" class="checkbox" id="chkSound" checked onclick="game.setSound(checked)" />
+                <input type="checkbox" class="checkbox" id="chkSound" checked onclick="game.setSound(this.checked)" />
                 <label for="chkSound">音效</label>
             </div>
         </div>

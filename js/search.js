@@ -152,7 +152,7 @@ export class Search {
             mate = true;
         } else if (hash.vl < -position.WIN_VALUE) {
             if (hash.vl >= -position.BAN_VALUE) {
-                return -position.ATE_VALUE;
+                return -position.MATE_VALUE;
             }
             hash.vl += this.pos.distance;
             mate = true;
@@ -446,6 +446,6 @@ export class Search {
      * @method 获取每毫秒计算的节点数
      */
     getKNPS() {
-        return this.allNodes / this.allMillis;
+        return this.allMillis === 0 ? 0 : this.allNodes / this.allMillis;
     }
 }

@@ -53,7 +53,13 @@ export class Game {
 
         this._audio =  new GameAudio(this, this._soundPath);
         this._board = new Board(this);
-        this._uiBoard = new UIBoard(this, container, this._imagePath);
+        this._uiBoard = new UIBoard(this, document.getElementById('container'), this._imagePath, document.getElementById('selMoveList'));
+
+        // 缓存 DOM 元素引用
+        this._selMoveList = document.getElementById('selMoveList');
+        this._selMoveMode = document.getElementById('selMoveMode');
+        this._selHandicap = document.getElementById('selHandicap');
+        this._selLevel = document.getElementById('selLevel');
 
         // 初始化棋盘模型
         this._board.initBoard(10,1);
@@ -139,7 +145,7 @@ export class Game {
     }
 
     onAICapture() {
-        this._audio.playAIMoveSound();
+        this._audio.playAICaptureSound();
     }
 
     onMove() {
@@ -185,29 +191,29 @@ export class Game {
      * @method 点击重新开始
      */
     onClickRestart() {
-        selMoveList.options.length = 1;
-        selMoveList.selectedIndex = 0;
-        this._board.computer = 1 - selMoveMode.selectedIndex;
-        this.restartGame(STARTUP_FEN[selHandicap.selectedIndex]);
+        this._selMoveList.options.length = 1;
+        this._selMoveList.selectedIndex = 0;
+        this._board.computer = 1 - this._selMoveMode.selectedIndex;
+        this.restartGame(STARTUP_FEN[this._selHandicap.selectedIndex]);
     }
 
     /**
      * @method 点击悔棋
      */
     onClickRetract() {
-        for (let i = this._board.pos.motionList.length; i < selMoveList.options.length; i++) {
-            this._board.pos.makeMove(parseInt(selMoveList.options[i].value));
+        for (let i = this._board.pos.motionList.length; i < this._selMoveList.options.length; i++) {
+            this._board.pos.makeMove(parseInt(this._selMoveList.options[i].value));
         }
         this._board.retract();
-        selMoveList.options.length = this._board.pos.motionList.length;
-        selMoveList.selectedIndex = selMoveList.options.length - 1;
+        this._selMoveList.options.length = this._board.pos.motionList.length;
+        this._selMoveList.selectedIndex = this._selMoveList.options.length - 1;
     }
 
     /**
      * @method 设置AI等级
      */
     onClickLevelChange() {
-        let thinkTimeMs = Math.pow(10, selLevel.selectedIndex + 1);
+        let thinkTimeMs = Math.pow(10, this._selLevel.selectedIndex + 1);
         this.setMaxThinkTimeMs(thinkTimeMs);
     }
 
@@ -217,13 +223,13 @@ export class Game {
     onRecordListChange() {
         const board = this.getBoard();
         if (board.isInit()) {
-            selMoveList.selectedIndex = selMoveList.options.length - 1;
+            this._selMoveList.selectedIndex = this._selMoveList.options.length - 1;
             return;
         }
 
         let from = board.pos.motionList.length;
-        let to = selMoveList.selectedIndex;
-        if (from == to + 1) {
+        let to = this._selMoveList.selectedIndex;
+        if (from === to + 1) {
             return;
         }
 
@@ -233,7 +239,7 @@ export class Game {
             }
         } else {
             for (let i = from; i <= to; i++) {
-                board.pos.makeMove(parseInt(selMoveList.options[i].value));
+                board.pos.makeMove(parseInt(this._selMoveList.options[i].value));
             }
         }
         board.flushBoard();
@@ -243,7 +249,7 @@ export class Game {
      * 刷新棋盘UI
      */
     onFlushBoard() {
-        this._uiBoard.flushBoard();
+        this._uiBoard.flushBoard(this._board.pos, this._board.lastMotion);
     }
 
     /**

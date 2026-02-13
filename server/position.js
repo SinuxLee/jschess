@@ -509,7 +509,7 @@ export class Position {
      * @method 卒(兵) 前进一步后的坐标
      * @param {number} pos 棋子坐标
      * @param {number} side 棋子属于哪一方
-     * @description 0-黑方, 1-红
+     * @description 0-红方, 1-黑方
      */
     getForwardPosForPawn(pos, side) {
         return pos - 16 + (side << 5);
@@ -566,7 +566,7 @@ export class Position {
      * @method 判断棋子是否在敌方这一侧
      * @param {number} pos 棋子坐标
      * @param {number} side 棋子属于哪一方
-     * @description 0-黑方, 1-红
+     * @description 0-红方, 1-黑方
      */
     isEnemyHalf(pos, side) {
         return (pos & 0x80) == (side << 7);
@@ -576,7 +576,7 @@ export class Position {
      * @method 判断棋子是否在己方这一侧
      * @param {number} pos 棋子坐标
      * @param {number} side 棋子属于哪一方
-     * @description 0-黑方, 1-红
+     * @description 0-红方, 1-黑方
      */
     isSelfHalf(pos, side) {
         return (pos & 0x80) != (side << 7);
@@ -612,7 +612,7 @@ export class Position {
     /**
      * @method 己方标识
      * @param {number} side
-     * @description 0-黑方, 1-红
+     * @description 0-红方, 1-黑方
      */
     getSelfSideTag(side) {
         return 8 + (side << 3);
@@ -621,7 +621,7 @@ export class Position {
     /**
      * @method 敌方标识
      * @param {number} side 
-     * @description 0-黑方, 1-红
+     * @description 0-红方, 1-黑方
      */
     getEnemySideTag(side) {
         return 16 - (side << 3);

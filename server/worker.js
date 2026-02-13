@@ -13,7 +13,7 @@ parentPort.on('message', async fen => {
 async function makeMove(fen){
     const pos = new Position()
     pos.fromFen(fen)
-    const s = new Search(pos, 64)
+    const s = new Search(pos, 16)
 
     return pos.move2Iccs(s.searchMain(10, 10))
 }
