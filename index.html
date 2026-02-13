@@ -13,7 +13,7 @@
         <div id="moves_container">
             <div class="label">步骤</div>
             <div>
-                <select id="selMoveList" size="7" onchange="game.onRecordListChange()">
+                <select id="selMoveList" size="7">
                     <option selected value="0">=== 开始 ===</option>
                 </select>
             </div>
@@ -46,17 +46,17 @@
             </div>
 
             <div class="top_space">
-                <input type="button" class="button" value="重新开始" onclick="game.onClickRestart()">
+                <input type="button" class="button" value="重新开始" id="btnRestart">
             </div>
             <div class="top_space">
-                <input type="button" class="button" value="悔棋" onclick="game.onClickRetract()">
+                <input type="button" class="button" value="悔棋" id="btnRetract">
             </div>
 
             <div class="game_space"></div>
 
             <div class="label">电脑水平</div>
             <div>
-                <select id="selLevel" size="3" onchange="game.onClickLevelChange()">
+                <select id="selLevel" size="3">
                     <option selected value="0">入门</option>
                     <option value="1">业余</option>
                     <option value="2">专业</option>
@@ -66,20 +66,18 @@
             <div class="game_space"></div>
 
             <div class="checkbox-container">
-                <input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="game.setAnimated(this.checked)" />
+                <input type="checkbox" class="checkbox" id="chkAnimated" checked />
                 <label for="chkAnimated">动画效果</label>
             </div>
             <div class="checkbox-container">
-                <input type="checkbox" class="checkbox" id="chkSound" checked onclick="game.setSound(this.checked)" />
+                <input type="checkbox" class="checkbox" id="chkSound" checked />
                 <label for="chkSound">音效</label>
             </div>
         </div>
     </div>
     <script type="module">
         import { Game } from "./js/game.js";
-        (async () => {
-            window.game = Game.getInstance();
-        })()
+        window.game = Game.getInstance();
     </script>
 </body>
 

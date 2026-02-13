@@ -61,6 +61,14 @@ export class Game {
         this._selHandicap = document.getElementById('selHandicap');
         this._selLevel = document.getElementById('selLevel');
 
+        // 绑定 DOM 事件
+        this._selMoveList.addEventListener('change', () => this.onRecordListChange());
+        this._selLevel.addEventListener('change', () => this.onClickLevelChange());
+        document.getElementById('btnRestart').addEventListener('click', () => this.onClickRestart());
+        document.getElementById('btnRetract').addEventListener('click', () => this.onClickRetract());
+        document.getElementById('chkAnimated').addEventListener('change', (e) => this.setAnimated(e.target.checked));
+        document.getElementById('chkSound').addEventListener('change', (e) => this.setSound(e.target.checked));
+
         // 初始化棋盘模型
         this._board.initBoard(10,1);
         this._board.setSearch(16);
