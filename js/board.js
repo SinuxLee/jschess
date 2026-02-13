@@ -1,7 +1,6 @@
 "use strict";
 
 
-import { Search, LIMIT_DEPTH } from "./search.js";
 import {
     Position, isChessOnBoard, getSrcPosFromMotion,
     getDstPosFromMotion, WIN_VALUE
@@ -39,7 +38,7 @@ export class Board {
         this.pos = new Position();
         this.pos.fromFen(normalFen);
 
-        this.search = null;
+        this._worker = null;
         this.sqSelected = 0; // 被选中的棋子
         this.millis = 0; // 思考的时间
         this.computer = -1; // 机器人开关, -1 - 不用机器, 0 - 机器人红方, 1 - 机器人黑方
@@ -63,7 +62,14 @@ export class Board {
     }
 
     setSearch(hashLevel) {
-        this.search = hashLevel == 0 ? null : new Search(this.pos, hashLevel);
+        if (this._worker) {
+            this._worker.terminate();
+            this._worker = null;
+        }
+        if (hashLevel === 0) return;
+
+        this._worker = new Worker(new URL('./ai-worker.js', import.meta.url), { type: 'module' });
+        this._worker.postMessage({ hashLevel: hashLevel });
     }
 
     // 翻转棋子位置
@@ -242,23 +248,34 @@ export class Board {
      * @method AI 计算做出响应
      */
     response() {
-        if (this.search == null || !this.computerMove()) {
+        if (this._worker == null || !this.computerMove()) {
             this._state = State.IDLE;
             return;
         }
 
         this._uiBoard.showThinkBox();
         this._state = State.THINKING;
-        setTimeout(async () => {
+
+        this._worker.onmessage = async (e) => {
             try {
-                await this.addMove(this.search.searchMain(LIMIT_DEPTH, this.millis), true);
-            } catch (e) {
+                if (e.data.error) {
+                    console.error('AI Worker:', e.data.error);
+                    this._state = State.IDLE;
+                    return;
+                }
+                await this.addMove(e.data.mv, true);
+            } catch (err) {
                 this._state = State.IDLE;
-                throw e;
+                throw err;
             } finally {
                 this._uiBoard.hideThinkBox();
             }
-        }, 50); // TODO: 根据人类选手的响应时间，计算机器人的思考时间。模拟人类的情绪波动（盲目自信走错棋）
+        };
+
+        this._worker.postMessage({
+            fen: this.pos.toFen(),
+            millis: this.millis
+        });
     }
 
     /**
