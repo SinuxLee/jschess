@@ -6,6 +6,7 @@ import {
     Position, isChessOnBoard, getSrcPosFromMotion,
     getDstPosFromMotion, WIN_VALUE
 } from "./position.js";
+import { WAV } from "./audio.js";
 
 // 开局
 const normalFen = "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1"
@@ -30,8 +31,10 @@ const State = Object.freeze({
  * @classdesc 棋盘
  */
 export class Board {
-    constructor(game) {
-        this._game = game;
+    constructor({audio, uiBoard, getAnimated}) {
+        this._audio = audio;
+        this._uiBoard = uiBoard;
+        this._getAnimated = getAnimated;
 
         this.pos = new Position();
         this.pos.fromFen(normalFen);
@@ -92,16 +95,16 @@ export class Board {
 
         // 判定是否长将/长捉
         if (!this.pos.makeMove(mv)) {
-            this._game.onIllegalMove();
+            this._audio.play(WAV.ILLEGAL);
             return;
         }
 
         this._state = State.ANIMATING;
         try {
-            if (this._game.getAnimated()) {
+            if (this._getAnimated()) {
                 let posSrc = this.flipped(getSrcPosFromMotion(mv));
                 let posDst = this.flipped(getDstPosFromMotion(mv));
-                await this._game.onMovePiece(posSrc, posDst);
+                await this._uiBoard.fakeAnimation(posSrc, posDst);
             }
             await this.postAddMove(mv, computerMove);
         } catch (e) {
@@ -123,10 +126,10 @@ export class Board {
         if (this.pos.isMate()) {
             if (computerMove) {
                 this.result = Result.LOSS;
-                this._game.onLose();
+                this._audio.play(WAV.LOSE);
             } else {
                 this.result = Result.WIN;
-                this._game.onWin();
+                this._audio.play(WAV.WIN);
             }
 
             let pc = this.pos.getSelfSideTag(this.pos.sdPlayer);
@@ -138,13 +141,13 @@ export class Board {
                 }
             }
 
-            if (!this._game.getAnimated() || sqMate == 0) {
+            if (!this._getAnimated() || sqMate == 0) {
                 this.postMate(computerMove);
                 return;
             }
 
             let sdPlayer = this.pos.sdPlayer == 0 ? "r" : "b"
-            await this._game.onMate(this.flipped(sqMate), sdPlayer);
+            await this._uiBoard.onMate(this.flipped(sqMate), sdPlayer);
 
             this.postMate(computerMove);
             return;
@@ -154,13 +157,16 @@ export class Board {
         if (vlRep > 0) {
             vlRep = this.pos.repValue(vlRep);
             if (vlRep > -WIN_VALUE && vlRep < WIN_VALUE) {
-                this._game.onDraw(0);
+                this._audio.play(WAV.DRAW);
+                this._uiBoard.alertDelay('双方不变作和，辛苦了！');
                 this.result = Result.DRAW;
             } else if (computerMove == (vlRep < 0)) {
-                this._game.onLose(1);
+                this._audio.play(WAV.LOSE);
+                this._uiBoard.alertDelay('长打作负，请不要气馁！');
                 this.result = Result.LOSS;
             } else {
-                this._game.onWin(1);
+                this._audio.play(WAV.WIN);
+                this._uiBoard.alertDelay('长打作负，祝贺你取得胜利！');
                 this.result = Result.WIN;
             }
             await this.onAddMove();
@@ -177,7 +183,8 @@ export class Board {
                 }
             }
             if (!hasMaterial) {
-                this._game.onDraw(1);
+                this._audio.play(WAV.DRAW);
+                this._uiBoard.alertDelay('双方都没有进攻棋子了，辛苦了！');
                 this.result = Result.DRAW;
                 await this.onAddMove();
                 this._state = State.IDLE;
@@ -192,7 +199,8 @@ export class Board {
                 }
             }
             if (!captured) {
-                this._game.onDraw(2);
+                this._audio.play(WAV.DRAW);
+                this._uiBoard.alertDelay('超过自然限着作和，辛苦了！');
                 this.result = Result.DRAW;
                 await this.onAddMove();
                 this._state = State.IDLE;
@@ -202,21 +210,21 @@ export class Board {
 
         if (this.pos.inCheck()) {
             if (computerMove) {
-                this._game.onAICheck();
+                this._audio.play(WAV.CHECK2);
             } else {
-                this._game.onCheck();
+                this._audio.play(WAV.CHECK);
             }
         } else if (this.pos.captured()) {
             if (computerMove) {
-                this._game.onAICapture();
+                this._audio.play(WAV.CAPTURE2);
             } else {
-                this._game.onCapture();
+                this._audio.play(WAV.CAPTURE);
             }
         } else {
             if (computerMove) {
-                this._game.onAIMove();
+                this._audio.play(WAV.MOVE2);
             } else {
-                this._game.onMove();
+                this._audio.play(WAV.MOVE);
             }
         }
 
@@ -225,7 +233,7 @@ export class Board {
     }
 
     async postMate(computerMove) {
-        this._game.onOver(computerMove)
+        this._uiBoard.alertDelay(computerMove ? '请再接再厉！' : '祝贺你取得胜利！');
         await this.onAddMove();
         this._state = State.IDLE;
     }
@@ -239,7 +247,7 @@ export class Board {
             return;
         }
 
-        this._game.beginThinking();
+        this._uiBoard.showThinkBox();
         this._state = State.THINKING;
         setTimeout(async () => {
             try {
@@ -248,7 +256,7 @@ export class Board {
                 this._state = State.IDLE;
                 throw e;
             } finally {
-                this._game.endThinking();
+                this._uiBoard.hideThinkBox();
             }
         }, 50); // TODO: 根据人类选手的响应时间，计算机器人的思考时间。模拟人类的情绪波动（盲目自信走错棋）
     }
@@ -263,7 +271,7 @@ export class Board {
         let sq = this.flipped(pos);
         let pc = this.pos.squares[sq];
         if ((pc & this.pos.getSelfSideTag(this.pos.sdPlayer)) != 0) {
-            this._game.onClickChess();
+            this._audio.play(WAV.CLICK);
             if (this.lastMotion != 0) {
                 this.drawSquare(getSrcPosFromMotion(this.lastMotion), false);
                 this.drawSquare(getDstPosFromMotion(this.lastMotion), false);
@@ -286,7 +294,7 @@ export class Board {
     drawSquare(sq, selected) {
         let piece = this.pos.squares[sq];
         sq = this.flipped(sq);
-        this._game.onDrawSquare(sq, selected, piece)
+        this._uiBoard.drawSquare(sq, selected, piece)
     }
 
     /**
@@ -312,7 +320,7 @@ export class Board {
         this.initBoard();
         this.pos.fromFen(fen);
         this.flushBoard();
-        this._game.onNewGame();
+        this._audio.play(WAV.NEWGAME);
         this.response();
     }
 
@@ -346,6 +354,6 @@ export class Board {
         let text = (this.pos.sdPlayer == 0 ? space : counter) +
             this.pos.move2Iccs(this.lastMotion);
         let value = "" + this.lastMotion;
-        await this._game.onAddMove(text, value,)
+        await this._uiBoard.addMove(text, value,)
     }
 }

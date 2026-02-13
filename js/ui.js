@@ -40,10 +40,10 @@ const PIECE_NAME = [
 ];
 
 export class UIBoard {
-    constructor(game, container, images, selMoveList) {
-        this._game = game;
+    constructor(container, images, selMoveList, onSelect) {
         this._images = images;
         this._selMoveList = selMoveList;
+        this._onSelect = onSelect;
 
         // 设置背景图片
         let style = container.style;
@@ -81,7 +81,7 @@ export class UIBoard {
             let that = this;
             img.onmousedown = function (sq_) {
                 return () => {
-                    that._game.onSelectSquare(sq_);
+                    that._onSelect(sq_);
                 }
             }(sq);
 

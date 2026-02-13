@@ -51,12 +51,28 @@ export class Game {
         this._imagePath = "images/";
         this._soundPath = "sounds/";
 
+        this.sound = true;
+        this.animated = true;
+
+        // 创建音频和 UI
         this._audio = new GameAudio(this._soundPath, () => this.sound);
-        this._board = new Board(this);
-        this._uiBoard = new UIBoard(this, document.getElementById('container'), this._imagePath, document.getElementById('selMoveList'));
+        let selMoveList = document.getElementById('selMoveList');
+        this._uiBoard = new UIBoard(
+            document.getElementById('container'),
+            this._imagePath,
+            selMoveList,
+            (sq) => this._board.selectedSquare(sq)
+        );
+
+        // 创建棋盘控制器，注入 UI 和音频依赖
+        this._board = new Board({
+            audio: this._audio,
+            uiBoard: this._uiBoard,
+            getAnimated: () => this.animated
+        });
 
         // 缓存 DOM 元素引用
-        this._selMoveList = document.getElementById('selMoveList');
+        this._selMoveList = selMoveList;
         this._selMoveMode = document.getElementById('selMoveMode');
         this._selHandicap = document.getElementById('selHandicap');
         this._selLevel = document.getElementById('selLevel');
@@ -69,12 +85,9 @@ export class Game {
         document.getElementById('chkAnimated').addEventListener('change', (e) => this.setAnimated(e.target.checked));
         document.getElementById('chkSound').addEventListener('change', (e) => this.setSound(e.target.checked));
 
-        // 初始化棋盘模型
-        this._board.initBoard(10,1);
+        // 初始化棋盘
+        this._board.initBoard(10, 1);
         this._board.setSearch(16);
-
-        this.sound = true; // 声音开关
-        this.animated = true; // 动画开关
     }
 
     setMaxThinkTimeMs(millis) {
@@ -82,90 +95,11 @@ export class Game {
     }
 
     restartGame(strFen) {
-        this._board.restart(strFen)
+        this._board.restart(strFen);
     }
 
     getBoard() {
         return this._board;
-    }
-
-    onIllegalMove() {
-        this._audio.play(WAV.ILLEGAL);
-    }
-
-    /**
-     * @method 输了
-     * @param {number} reason 输的原因，0-正常打输了, 1-我方长将/长捉
-     */
-    onLose(reason) {
-        this._audio.play(WAV.LOSE);
-        let rea = reason || 0; // 默认为正常输
-        if (1 == rea) {
-            this._uiBoard.alertDelay("长打作负，请不要气馁！");
-        }
-    }
-
-    /**
-     * @method 赢了
-     * @param {number} reason 0-正常打赢, 1-对方长捉/长将
-     */
-    onWin(reason) {
-        this._audio.play(WAV.WIN);
-        let rea = reason || 0;
-        if (1 == rea) {
-            this._uiBoard.alertDelay("长打作负，祝贺你取得胜利！");
-        }
-    }
-
-    /**
-     * @method 平局
-     * @param {number} reason,0-不变着法, 1-双方没有进攻棋子了
-     */
-    onDraw(reason) {
-        this._audio.play(WAV.DRAW);
-        if (0 == reason) {
-            this._uiBoard.alertDelay("双方不变作和，辛苦了！");
-        } else if (1 == reason) {
-            this._uiBoard.alertDelay("双方都没有进攻棋子了，辛苦了！");
-        } else if (2 == reason) {
-            this._uiBoard.alertDelay("超过自然限着作和，辛苦了！");
-        }
-    }
-
-    onOver(isWin){
-        this._uiBoard.alertDelay(isWin ? "请再接再厉！" : "祝贺你取得胜利！");
-    }
-
-    onClickChess() {
-        this._audio.play(WAV.CLICK);
-    }
-
-    onCheck() {
-        this._audio.play(WAV.CHECK);
-    }
-
-    onAICheck() {
-        this._audio.play(WAV.CHECK2);
-    }
-
-    onCapture() {
-        this._audio.play(WAV.CAPTURE);
-    }
-
-    onAICapture() {
-        this._audio.play(WAV.CAPTURE2);
-    }
-
-    onMove() {
-        this._audio.play(WAV.MOVE);
-    }
-
-    onAIMove() {
-        this._audio.play(WAV.MOVE2);
-    }
-
-    onNewGame() {
-        this._audio.play(WAV.NEWGAME);
     }
 
     setSound(sound) {
@@ -175,24 +109,8 @@ export class Game {
         }
     }
 
-    getSound() {
-        return this.sound;
-    }
-
     setAnimated(animated) {
         this.animated = animated;
-    }
-
-    getAnimated() {
-        return this.animated;
-    }
-
-    beginThinking() {
-        this._uiBoard.showThinkBox();
-    }
-
-    endThinking() {
-        this._uiBoard.hideThinkBox();
     }
 
     /**
@@ -251,37 +169,5 @@ export class Game {
             }
         }
         board.flushBoard();
-    }
-
-    /**
-     * 刷新棋盘UI
-     */
-    onFlushBoard() {
-        this._uiBoard.flushBoard(this._board.pos, this._board.lastMotion);
-    }
-
-    /**
-     * @method 绘制棋子
-     * @param {number} sq 棋子坐标 
-     * @param {boolean} selected 是否选中状态 0-未选中, 1-选中
-     */
-    onDrawSquare(sq, selected, piece){
-        this._uiBoard.drawSquare(sq, selected, piece)
-    }
-
-    async onAddMove(text, value,){
-        await this._uiBoard.addMove(text, value,)
-    }
-
-    async onMovePiece(posSrc, posDst){
-        await this._uiBoard.fakeAnimation(posSrc, posDst);
-    }
-
-    async onMate(sqMate,sdPlayer){
-        await this._uiBoard.onMate(sqMate,sdPlayer);
-    }
-
-    async onSelectSquare(sq){
-        await this._board.selectedSquare(sq)
     }
 }
