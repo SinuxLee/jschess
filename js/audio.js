@@ -17,77 +17,50 @@ const WAV = Object.freeze({
     CHECK2: "check2",
     CAPTURE2: "capture2",
     MOVE2: "move2",
-})
+});
 
-export class GameAudio extends EventTarget{
-    constructor(game, soundPath) {
-        super()
-
-        this._game = game;
+/**
+ * @class GameAudio
+ * @classdesc 游戏音效管理，预加载所有音频资源
+ */
+class GameAudio {
+    /**
+     * @param {string} soundPath - 音频文件目录路径
+     * @param {Function} isEnabled - 返回是否启用音效的回调
+     */
+    constructor(soundPath, isEnabled) {
         this._soundPath = soundPath;
-        this.dummy = document.createElement("div");
-        this.dummy.style.position = "absolute";
-        document.body.appendChild(this.dummy);
+        this._isEnabled = isEnabled;
+        this._cache = {};
+        this._preload();
     }
 
-    playDrawSound() {
-        this.playSound(WAV.DRAW);
+    /**
+     * @description 预加载全部音效文件到缓存
+     */
+    _preload() {
+        for (let key in WAV) {
+            let name = WAV[key];
+            this._cache[name] = new Audio(this._soundPath + name + '.wav');
+        }
     }
 
-    playCheckSound() {
-        this.playSound(WAV.CHECK);
-    }
-
-    playCaptureSound() {
-        this.playSound(WAV.CAPTURE);
-    }
-
-    playMoveSound() {
-        this.playSound(WAV.MOVE);
-    }
-
-    playClickSound() {
-        this.playSound(WAV.CLICK);
-    }
-
-    playNewGameSound() {
-        this.playSound(WAV.NEWGAME);
-    }
-
-    playIllegalSound() {
-        this.playSound(WAV.ILLEGAL);
-    }
-
-    playLoseSound() {
-        this.playSound(WAV.LOSS);
-    }
-
-    playWinSound() {
-        this.playSound(WAV.WIN);
-    }
-
-    playAICheckSound() {
-        this.playSound(WAV.CHECK2);
-    }
-
-    playAICaptureSound() {
-        this.playSound(WAV.CAPTURE2);
-    }
-
-    playAIMoveSound() {
-        this.playSound(WAV.MOVE2);
-    }
-
-    playSound(soundFile) {
-        if (!this._soundPath || !this._game.getSound()) {
+    /**
+     * @description 播放指定音效
+     * @param {string} name - WAV 枚举值
+     */
+    play(name) {
+        if (!this._soundPath || !this._isEnabled()) {
             return;
         }
-        
-        try {
-            new Audio(this._soundPath + soundFile + ".wav").play();
-        } catch (e) {
-            this.dummy.innerHTML =
-                `<embed src="${this._soundPath + soundFile}.wav" hidden="true" autostart="true" loop="false"/>`;
+
+        let audio = this._cache[name];
+        if (audio) {
+            // 重置播放位置，支持快速连续播放
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
         }
     }
 }
+
+export { GameAudio, WAV };

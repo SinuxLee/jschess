@@ -27,7 +27,7 @@
 
 "use strict";
 
-import { GameAudio } from "./audio.js";
+import { GameAudio, WAV } from "./audio.js";
 import { Board } from "./board.js";
 import { UIBoard } from "./ui.js"
 
@@ -51,7 +51,7 @@ export class Game {
         this._imagePath = "images/";
         this._soundPath = "sounds/";
 
-        this._audio =  new GameAudio(this, this._soundPath);
+        this._audio = new GameAudio(this._soundPath, () => this.sound);
         this._board = new Board(this);
         this._uiBoard = new UIBoard(this, document.getElementById('container'), this._imagePath, document.getElementById('selMoveList'));
 
@@ -82,7 +82,7 @@ export class Game {
     }
 
     onIllegalMove() {
-        this._audio.playIllegalSound();
+        this._audio.play(WAV.ILLEGAL);
     }
 
     /**
@@ -90,7 +90,7 @@ export class Game {
      * @param {number} reason 输的原因，0-正常打输了, 1-我方长将/长捉
      */
     onLose(reason) {
-        this._audio.playLoseSound();
+        this._audio.play(WAV.LOSE);
         let rea = reason || 0; // 默认为正常输
         if (1 == rea) {
             this._uiBoard.alertDelay("长打作负，请不要气馁！");
@@ -102,7 +102,7 @@ export class Game {
      * @param {number} reason 0-正常打赢, 1-对方长捉/长将
      */
     onWin(reason) {
-        this._audio.playWinSound();
+        this._audio.play(WAV.WIN);
         let rea = reason || 0;
         if (1 == rea) {
             this._uiBoard.alertDelay("长打作负，祝贺你取得胜利！");
@@ -114,7 +114,7 @@ export class Game {
      * @param {number} reason,0-不变着法, 1-双方没有进攻棋子了
      */
     onDraw(reason) {
-        this._audio.playDrawSound();
+        this._audio.play(WAV.DRAW);
         if (0 == reason) {
             this._uiBoard.alertDelay("双方不变作和，辛苦了！");
         } else if (1 == reason) {
@@ -129,41 +129,41 @@ export class Game {
     }
 
     onClickChess() {
-        this._audio.playClickSound();
+        this._audio.play(WAV.CLICK);
     }
 
     onCheck() {
-        this._audio.playCheckSound();
+        this._audio.play(WAV.CHECK);
     }
 
     onAICheck() {
-        this._audio.playAICheckSound();
+        this._audio.play(WAV.CHECK2);
     }
 
     onCapture() {
-        this._audio.playCaptureSound();
+        this._audio.play(WAV.CAPTURE);
     }
 
     onAICapture() {
-        this._audio.playAICaptureSound();
+        this._audio.play(WAV.CAPTURE2);
     }
 
     onMove() {
-        this._audio.playMoveSound();
+        this._audio.play(WAV.MOVE);
     }
 
     onAIMove() {
-        this._audio.playAIMoveSound();
+        this._audio.play(WAV.MOVE2);
     }
 
     onNewGame() {
-        this._audio.playNewGameSound();
+        this._audio.play(WAV.NEWGAME);
     }
 
     setSound(sound) {
         this.sound = sound;
         if (sound) {
-            this._audio.playClickSound();
+            this._audio.play(WAV.CLICK);
         }
     }
 
