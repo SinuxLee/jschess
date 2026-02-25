@@ -1,6 +1,6 @@
 "use strict";
 
-import { getChessPosX, getChessPosY, isChessOnBoard } from "./position.js";
+import { getX, getY, isOnBoard } from './core/coords.js';
 
 /**
  * UI中棋盘大小定义
@@ -66,7 +66,7 @@ export class UIBoard {
         this.imgSquares = [];
 
         for (let sq = 0; sq < 256; sq++) {
-            if (!isChessOnBoard(sq)) {
+            if (!isOnBoard(sq)) {
                 this.imgSquares.push(null);
                 continue;
             }
@@ -107,7 +107,7 @@ export class UIBoard {
      */
     flushBoard(pos, lastMotion) {
         for (let sq = 0; sq < 256; sq++) {
-            if (isChessOnBoard(sq)) {
+            if (isOnBoard(sq)) {
                 let selected = (lastMotion > 0) &&
                     (sq === (lastMotion & 0xFF) || sq === ((lastMotion >> 8) & 0xFF));
                 this.drawSquare(sq, selected, pos.squares[sq]);
@@ -209,7 +209,7 @@ export class UIBoard {
      * @param {number} pos 
      */
     getUiXFromPos(pos) {
-        return UI_BOARD_LEFT_LINE_POS + (getChessPosX(pos) - 3) * UI_CCHESS_SIZE;
+        return UI_BOARD_LEFT_LINE_POS + (getX(pos) - 3) * UI_CCHESS_SIZE;
     }
 
     /**
@@ -217,7 +217,7 @@ export class UIBoard {
      * @param {number} pos 
      */
     getUiYFromPos(pos) {
-        return UI_BOARD_TOP_LINE_POS + (getChessPosY(pos) - 3) * UI_CCHESS_SIZE;
+        return UI_BOARD_TOP_LINE_POS + (getY(pos) - 3) * UI_CCHESS_SIZE;
     }
 
     /**

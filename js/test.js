@@ -243,7 +243,12 @@ const puzzleList = [
     "3ak1b1r/4a2Pn/4b4/4C4/9/9/cR7/n8/4A1p2/3AKC3 w",
 ];
 
-import { isChessOnBoard, Position } from "./position.js";
+import { Position }                from './engine/position.js';
+import { generateMoves, isChecked } from './engine/movegen.js';
+import { fromFen }                 from './engine/fen.js';
+import { isOnBoard }               from './core/coords.js';
+import { makeMove }                from './core/move.js';
+import { sideTag }                 from './core/piece.js';
 
 function test() {
     let pos = new Position();
@@ -251,40 +256,48 @@ function test() {
         gened = 0,
         moved = 0,
         check = 0;
-    for (let i = 0; i < puzzleList.length; i++) {
-        let curMoved = 0;
-        let curChecked = 0;
-        let curLegal = 0;
 
-        pos.fromFen(puzzleList[i]);
-        // 尝试移动每个棋子
-        for (let posSrc = 0; posSrc < 256; posSrc++) {
-            if (isChessOnBoard(posSrc)) {
-                for (let posDst = 0; posDst < 256; posDst++) {
-                    if (isChessOnBoard(posDst)) {
-                        // 尝试将当前棋子移动到其它位置
-                        curLegal += (pos.legalMove(pos.makeMotionBySrcDst(posSrc, posDst)) ? 1 : 0);
-                    }
+    for (let i = 0; i < puzzleList.length; i++) {
+        let curMoved   = 0;
+        let curChecked = 0;
+        let curLegal   = 0;
+
+        fromFen(pos, puzzleList[i], isChecked);
+
+        // 枚举所有棋盘内的走法，统计合法走法数（不被将军）
+        const self = sideTag(pos.sdPlayer);
+        for (let src = 0; src < 256; src++) {
+            if (!isOnBoard(src)) { continue; }
+            if ((pos.squares[src] & self) === 0) { continue; }
+            for (let dst = 0; dst < 256; dst++) {
+                if (!isOnBoard(dst)) { continue; }
+                if ((pos.squares[dst] & self) !== 0) { continue; }
+                const mv = makeMove(src, dst);
+                if (pos.makeMove(mv, isChecked)) {
+                    curLegal++;
+                    pos.undoMakeMove();
                 }
             }
         }
 
-        let mvs = pos.generateMoves(null); // 产生可行的着法
+        // 走法生成器结果
+        const mvs = generateMoves(pos);
         for (let j = 0; j < mvs.length; j++) {
-            if (pos.makeMove(mvs[j])) {
+            if (pos.makeMove(mvs[j], isChecked)) {
                 curMoved++;
                 curChecked += (pos.inCheck() ? 1 : 0);
                 pos.undoMakeMove();
             }
         }
-        gened += mvs.length;
-        moved += curMoved;
-        check += curChecked;
-        legal += curLegal;
 
-        console.log("test" + i + ", 合法:" + curLegal + ", 生成:" + mvs.length + ", 可移动:" + curMoved + ", 校验:" + curChecked);
+        gened  += mvs.length;
+        moved  += curMoved;
+        check  += curChecked;
+        legal  += curLegal;
+
+        console.log('test' + i + ', 合法:' + curLegal + ', 生成:' + mvs.length + ', 可移动:' + curMoved + ', 校验:' + curChecked);
     }
-    console.log("合法个数:" + legal + ", 生成的个数:" + gened + ", 可移动的个数:" + moved + ", 通过校验的个数:" + check);
+    console.log('合法个数:' + legal + ', 生成的个数:' + gened + ', 可移动的个数:' + moved + ', 通过校验的个数:' + check);
 }
 
 test();

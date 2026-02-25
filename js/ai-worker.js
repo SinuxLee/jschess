@@ -1,32 +1,39 @@
 "use strict";
 
 /**
- * @description AI 搜索 Web Worker
- * 接收 FEN 和搜索参数，返回最佳着法（ICCS 格式不适用，直接返回 mv 数值）
+ * @description AI 搜索 Web Worker（新架构版）
+ *
+ * 消息协议：
+ *   初始化：{ hashLevel: number }   — hashLevel 仅用于向后兼容，新架构中不需要
+ *   搜索：  { fen: string, millis: number }
+ *   响应：  { mv: number } | { error: string }
  */
 
-import { Position, MATE_VALUE } from './position.js';
-import { Search, LIMIT_DEPTH } from './search.js';
+import { Position }  from './engine/position.js';
+import { isChecked } from './engine/movegen.js';
+import { fromFen }   from './engine/fen.js';
+import { Search }    from './ai/search.js';
 
-let search = null;
+let _pos    = null;
+let _search = null;
 
 self.onmessage = function (e) {
-    let { fen, millis, hashLevel } = e.data;
+    const { fen, millis, hashLevel } = e.data;
 
     if (hashLevel !== undefined) {
-        // 初始化搜索引擎
-        let pos = new Position();
-        search = new Search(pos, hashLevel);
+        // 初始化（hashLevel 在新架构中不影响搜索，仅用于兼容旧协议）
+        _pos    = new Position();
+        _search = new Search(_pos);
         return;
     }
 
-    if (!search) {
+    if (!_search) {
         self.postMessage({ error: '搜索引擎未初始化' });
         return;
     }
 
     // 加载局面并搜索
-    search.pos.fromFen(fen);
-    let mv = search.searchMain(LIMIT_DEPTH, millis);
-    self.postMessage({ mv: mv });
+    fromFen(_pos, fen, isChecked);
+    _search.searchMain(64, millis);
+    self.postMessage({ mv: _search.bestMove });
 };

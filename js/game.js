@@ -27,9 +27,12 @@
 
 "use strict";
 
-import { GameAudio, WAV } from "./audio.js";
-import { Board } from "./board.js";
-import { UIBoard } from "./ui.js"
+import { GameAudio, WAV } from './audio.js';
+import { Board }          from './board.js';
+import { UIBoard }        from './ui.js';
+import { makeMove }       from './core/move.js';
+import { fromFen }        from './engine/fen.js';
+import { isChecked }      from './engine/movegen.js';
 
 const STARTUP_FEN = [
     "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w", // 不让子
@@ -80,13 +83,14 @@ export class Game {
         // 绑定 DOM 事件
         this._selMoveList.addEventListener('change', () => this.onRecordListChange());
         this._selLevel.addEventListener('change', () => this.onClickLevelChange());
+        this._selMoveMode.addEventListener('change', () => this.onClickRestart());
         document.getElementById('btnRestart').addEventListener('click', () => this.onClickRestart());
         document.getElementById('btnRetract').addEventListener('click', () => this.onClickRetract());
         document.getElementById('chkAnimated').addEventListener('change', (e) => this.setAnimated(e.target.checked));
         document.getElementById('chkSound').addEventListener('change', (e) => this.setSound(e.target.checked));
 
-        // 初始化棋盘
-        this._board.initBoard(10, 1);
+        // 初始化棋盘（computer 由 selMoveMode 初始选项决定）
+        this._board.initBoard(10, this._computerFromMode());
         this._board.setSearch(16);
     }
 
@@ -114,12 +118,22 @@ export class Game {
     }
 
     /**
-     * @method 点击重新开始
+     * @method 根据 selMoveMode 计算 computer 值
+     *   0=我先走  → computer=1（电脑执黑）
+     *   1=电脑先走 → computer=0（电脑执红）
+     *   2=不用电脑 → computer=-1
+     */
+    _computerFromMode() {
+        return 1 - this._selMoveMode.selectedIndex; // 0→1, 1→0, 2→-1
+    }
+
+    /**
+     * @method 点击重新开始（或"谁先走"选项变更时）
      */
     onClickRestart() {
         this._selMoveList.options.length = 1;
         this._selMoveList.selectedIndex = 0;
-        this._board.computer = 1 - this._selMoveMode.selectedIndex;
+        this._board.computer = this._computerFromMode();
         this.restartGame(STARTUP_FEN[this._selHandicap.selectedIndex]);
     }
 
@@ -127,11 +141,17 @@ export class Game {
      * @method 点击悔棋
      */
     onClickRetract() {
-        for (let i = this._board.pos.motionList.length; i < this._selMoveList.options.length; i++) {
-            this._board.pos.makeMove(parseInt(this._selMoveList.options[i].value));
+        // moveStack 长度 = 历史步数 + 1（初始哨兵项）；selMoveList 第0项是"=== 开始 ==="
+        const stackLen = this._board.pos.moveStack.length;
+        for (let i = stackLen - 1; i < this._selMoveList.options.length - 1; i++) {
+            this._board.pos.makeMove(
+                parseInt(this._selMoveList.options[i + 1].value),
+                isChecked
+            );
         }
         this._board.retract();
-        this._selMoveList.options.length = this._board.pos.motionList.length;
+        // moveStack.length - 1 = 实际走棋步数，对应 selMoveList 中的选项数（不含"开始"）
+        this._selMoveList.options.length = this._board.pos.moveStack.length;
         this._selMoveList.selectedIndex = this._selMoveList.options.length - 1;
     }
 
@@ -144,7 +164,10 @@ export class Game {
     }
 
     /**
-     * @method 走棋记录有变更
+     * @method 走棋记录有变更（点击棋谱列表跳转局面）
+     *
+     * moveStack.length - 1 = 当前实际步数
+     * selMoveList.selectedIndex = 目标步数（0 = 开局，1 = 第1步，...）
      */
     onRecordListChange() {
         const board = this.getBoard();
@@ -153,19 +176,25 @@ export class Game {
             return;
         }
 
-        let from = board.pos.motionList.length;
-        let to = this._selMoveList.selectedIndex;
-        if (from === to + 1) {
+        // 当前步数（moveStack 有哨兵项，-1 得到实际步数）
+        const from = board.pos.moveStack.length - 1;
+        const to   = this._selMoveList.selectedIndex;
+        if (from === to) {
             return;
         }
 
-        if (from > to + 1) {
-            for (let i = to + 1; i < from; i++) {
+        if (from > to) {
+            // 需要撤销
+            for (let i = 0; i < from - to; i++) {
                 board.pos.undoMakeMove();
             }
         } else {
-            for (let i = from; i <= to; i++) {
-                board.pos.makeMove(parseInt(this._selMoveList.options[i].value));
+            // 需要前进（从 selMoveList 重放走法）
+            for (let i = from + 1; i <= to; i++) {
+                board.pos.makeMove(
+                    parseInt(this._selMoveList.options[i].value),
+                    isChecked
+                );
             }
         }
         board.flushBoard();
