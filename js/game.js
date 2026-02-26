@@ -30,8 +30,6 @@
 import { GameAudio, WAV } from './audio.js';
 import { Board }          from './board.js';
 import { UIBoard }        from './ui.js';
-import { makeMove }       from './core/move.js';
-import { fromFen }        from './engine/fen.js';
 import { isChecked }      from './engine/movegen.js';
 
 const STARTUP_FEN = [
@@ -120,12 +118,15 @@ export class Game {
 
     /**
      * @method 根据 selMoveMode 计算 computer 值
-     *   0=我先走  → computer=1（电脑执黑）
+     *   0=我先走   → computer=1（电脑执黑）
      *   1=电脑先走 → computer=0（电脑执红）
      *   2=不用电脑 → computer=-1
+     *   3=双机对弈 → computer=2（红黑皆电脑）
      */
     _computerFromMode() {
-        return 1 - this._selMoveMode.selectedIndex; // 0→1, 1→0, 2→-1
+        const idx = this._selMoveMode.selectedIndex;
+        if (idx === 3) return 2;          // 双机对弈
+        return 1 - idx;                   // 0→1, 1→0, 2→-1
     }
 
     /**

@@ -83,9 +83,11 @@ export class Board {
             this._worker.terminate();
             this._worker = null;
         }
+
         if (hashLevel === 0) {
             return;
         }
+
         this._worker = new Worker(
             new URL('./ai-worker.js', import.meta.url),
             { type: 'module' }
@@ -93,13 +95,20 @@ export class Board {
         this._worker.postMessage({ hashLevel });
     }
 
-    /** 翻转坐标（电脑执红时棋盘翻转） */
+    /** 翻转坐标（电脑执红时棋盘翻转；双机对弈不翻转） */
     flipped(sq) {
         return this.computer === 0 ? flipSq(sq) : sq;
     }
 
-    /** 是否该电脑走棋 */
+    /**
+     * 是否该电脑走棋
+     * computer=-1：不用电脑，始终 false
+     * computer=0 ：电脑执红，轮到红方(sdPlayer=0)时 true
+     * computer=1 ：电脑执黑，轮到黑方(sdPlayer=1)时 true
+     * computer=2 ：双机对弈，始终 true
+     */
     computerMove() {
+        if (this.computer === 2) return true;
         return this.pos.sdPlayer === this.computer;
     }
 
@@ -133,10 +142,12 @@ export class Board {
         if (this.busy || this.result !== Result.INIT) {
             return;
         }
-        // 电脑回合（且有 AI）时不允许玩家操作
-        if (this._worker !== null && this.computerMove()) {
+
+        // 双机对弈或电脑回合时不允许玩家操作
+        if (this._worker !== null && (this.computer === 2 || this.computerMove())) {
             return;
         }
+
         const sq = this.flipped(pos);
         const pc = this.pos.squares[sq];
 
@@ -163,6 +174,7 @@ export class Board {
         if (this.busy) {
             return;
         }
+
         // 保留调用方已设置的 computer，不传参数会重置为默认值
         this.initBoard(this.millis, this.computer);
         fromFen(this.pos, fen, isChecked);
@@ -176,12 +188,14 @@ export class Board {
         if (this.busy) {
             return;
         }
+
         this.result = Result.INIT;
 
         // 至少保留初始哨兵项（moveStack[0]）
         if (this.pos.moveStack.length > 1) {
             this.pos.undoMakeMove();
         }
+
         if (this.pos.moveStack.length > 1 && this.computerMove()) {
             this.pos.undoMakeMove();
         }
@@ -198,6 +212,18 @@ export class Board {
             return;
         }
 
+        // 双机对弈时使用 setTimeout 加一点延迟，避免 UI 卡死
+        if (this.computer === 2) {
+            setTimeout(() => this._doAiSearch(true), 1000);
+            return;
+        }
+
+        this._doAiSearch(true);
+    }
+
+    /** ─── 实际触发 AI 搜索 ─── */
+    _doAiSearch(isComputerMove) {
+
         this._uiBoard.showThinkBox();
         this._state = State.THINKING;
 
@@ -208,7 +234,7 @@ export class Board {
                     this._state = State.IDLE;
                     return;
                 }
-                await this.addMove(e.data.mv, true);
+                await this.addMove(e.data.mv, isComputerMove);
             } catch (err) {
                 this._state = State.IDLE;
                 throw err;
@@ -292,6 +318,17 @@ export class Board {
 
         // ── 将死检测 ──
         if (this._isMate()) {
+            // 双机对弈时：当前行棋方（被将死方）= pos.sdPlayer
+            // sdPlayer=0(红) 被将死 → 黑胜；sdPlayer=1(黑) 被将死 → 红胜
+            if (this.computer === 2) {
+                this.result = Result.LOSS; // 对观战者无所谓，统一记 LOSS
+                const loser = this.pos.sdPlayer === 0 ? '红方' : '黑方';
+                this._uiBoard.alertDelay(`${loser}被将死！`);
+                this._audio.play(WAV.LOSE);
+                await this.onAddMove();
+                this._state = State.IDLE;
+                return;
+            }
             if (computerMove) {
                 this.result = Result.LOSS;
                 this._audio.play(WAV.LOSE);
@@ -325,8 +362,14 @@ export class Board {
         if (vlRep !== 0) {
             if (vlRep > -WIN_VALUE && vlRep < WIN_VALUE) {
                 this._audio.play(WAV.DRAW);
-                this._uiBoard.alertDelay('双方不变作和，辛苦了！');
+                this._uiBoard.alertDelay('双方不变作和！');
                 this.result = Result.DRAW;
+            } else if (this.computer === 2) {
+                // 双机对弈：vlRep < 0 表示当前方长打，即当前行棋方负
+                const loser = this.pos.sdPlayer === 0 ? '红方' : '黑方';
+                this._audio.play(WAV.LOSE);
+                this._uiBoard.alertDelay(`${loser}长打作负！`);
+                this.result = Result.LOSS;
             } else if (computerMove === (vlRep < 0)) {
                 this._audio.play(WAV.LOSE);
                 this._uiBoard.alertDelay('长打作负，请不要气馁！');
@@ -394,7 +437,9 @@ export class Board {
     }
 
     async _postMate(computerMove) {
-        this._uiBoard.alertDelay(computerMove ? '请再接再厉！' : '祝贺你取得胜利！');
+        if (this.computer !== 2) {
+            this._uiBoard.alertDelay(computerMove ? '请再接再厉！' : '祝贺你取得胜利！');
+        }
         await this.onAddMove();
         this._state = State.IDLE;
     }
