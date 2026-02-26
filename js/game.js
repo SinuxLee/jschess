@@ -84,6 +84,7 @@ export class Game {
         this._selMoveList.addEventListener('change', () => this.onRecordListChange());
         this._selLevel.addEventListener('change', () => this.onClickLevelChange());
         this._selMoveMode.addEventListener('change', () => this.onClickRestart());
+        this._selHandicap.addEventListener('change', () => this.onClickRestart());
         document.getElementById('btnRestart').addEventListener('click', () => this.onClickRestart());
         document.getElementById('btnRetract').addEventListener('click', () => this.onClickRetract());
         document.getElementById('chkAnimated').addEventListener('change', (e) => this.setAnimated(e.target.checked));
