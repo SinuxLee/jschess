@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "types": ["svelte", "vite/client"],
+    "noEmit": true
+  },
+  "include": ["src/**/*", "src/**/*.svelte"],
+  "exclude": ["dist", "node_modules"],
+  "references": [
+    { "path": "../engine" },
+    { "path": "../ai" },
+    { "path": "../game" }
+  ]
+}
