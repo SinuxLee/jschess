@@ -1,3 +1,18 @@
+## Migration In Progress (TypeScript Refactor)
+
+The legacy vanilla-JS codebase has moved to `legacy/`. It remains runnable — open `legacy/index.html` with a local web server (e.g. VSCode Live Server) to play the old version while the TypeScript rewrite is under way.
+
+New code lives in `packages/`:
+
+- `@jschess/engine` — chess primitives + rules
+- `@jschess/ai` — search + opening book
+- `@jschess/game` — match state + AI client (framework-agnostic)
+- `@jschess/app` — Svelte 5 + Vite UI (the deployable artifact)
+
+See `docs/ARCHITECTURE.md` and `docs/superpowers/specs/2026-04-30-jschess-typescript-refactor-design.md`.
+
+---
+
 ## 实体
 
 1. 棋子
