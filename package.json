@@ -17,6 +17,7 @@
     "check:boundaries": "bash scripts/check-boundaries.sh"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.9.0",
     "eslint": "^9.15.0",
     "eslint-plugin-import": "^2.31.0",
