@@ -1,21 +1,32 @@
 {
-  "name": "jschess",
-  "version": "1.0.0",
-  "description": "中国象棋",
+  "name": "jschess-monorepo",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "tools/*"
+  ],
   "scripts": {
-    "test": "node ./js/test.js"
+    "typecheck": "tsc --build --verbose",
+    "test": "bun test",
+    "lint": "eslint \"packages/*/src/**/*.{ts,svelte}\" \"tools/*/src/**/*.ts\"",
+    "format": "prettier --write \"**/*.{ts,svelte,json,md}\"",
+    "build": "bun run --filter @jschess/app build",
+    "dev": "bun run --filter @jschess/app dev",
+    "check:boundaries": "bash scripts/check-boundaries.sh"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SinuxLee/jschess.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/SinuxLee/jschess/issues"
-  },
-  "homepage": "https://github.com/SinuxLee/jschess#readme"
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "eslint": "^9.15.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-svelte": "^2.46.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-svelte": "^3.2.7",
+    "svelte": "^5.2.0",
+    "svelte-eslint-parser": "^0.43.0",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.14.0",
+    "vitest": "^2.1.5"
+  }
 }

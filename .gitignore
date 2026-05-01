@@ -1,0 +1,21 @@
+# Build artifacts
+node_modules/
+dist/
+.svelte-kit/
+*.tsbuildinfo
+
+# Bun
+.bun-cache/
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+.vitest-cache/

@@ -1,0 +1,9 @@
+[install]
+# Use exact versions by default
+exact = false
+
+[install.scopes]
+# No custom scopes needed; @jschess/* is a workspace scope resolved via workspaces.
+
+[test]
+preload = []
