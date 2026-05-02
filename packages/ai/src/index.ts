@@ -1,2 +1,5 @@
-// @jschess/ai — public API barrel. Populated in Phase 5 and 6.
-export {};
+/**
+ * @jschess/ai — search engine + opening book.
+ * Depends only on @jschess/engine. No DOM, no network.
+ */
+export * from './search';
