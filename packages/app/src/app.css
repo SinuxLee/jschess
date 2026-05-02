@@ -1,18 +1,197 @@
-body {
-  font-family: 'Microsoft Yahei', sans-serif;
-  background: #e8d8a8;
+/**
+ * Global theme — ported from legacy/css/layout.css.
+ * Chinese-red (#c41e3a) accent matches the shipped www.sinuxlee.github.io/jschess look.
+ * Board geometry: 521×577 base scaled 1.37× inside a 730×808 white card.
+ */
+
+* {
   margin: 0;
-  padding: 16px;
+  padding: 0;
+  border: 0;
+  box-sizing: border-box;
 }
-#game_title {
-  text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 12px;
+
+body {
+  background: #f5f5f5;
+  margin: 0 auto;
+  font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+  color: #333;
 }
-#game_zone {
+
+div.label {
+  font-size: 16px;
+  margin: 16px 0 8px;
+  color: #333;
+}
+
+label {
+  font-size: 14px;
+}
+
+select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  margin-bottom: 20px;
+  cursor: pointer;
+  color: #333;
+}
+select:hover {
+  border-color: #c41e3a;
+}
+select[size] {
+  min-height: 120px;
+}
+
+option {
+  font-size: 14px;
+  padding: 8px 12px;
+  background: #fff;
+  color: #333;
+}
+option:checked {
+  background: #c41e3a;
+  color: #fff;
+}
+option:hover {
+  background: #f0f0f0;
+}
+
+input.button {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  color: #fff;
+  background: #c41e3a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+input.button:hover {
+  background: #a01830;
+  transform: translateY(-1px);
+}
+
+input[type='checkbox'] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.checkbox-container {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.top_space {
+  padding-top: 12px;
+}
+
+.game_space {
+  height: 10px;
+}
+
+#game_title {
+  margin: 32px auto;
+  height: 60px;
+  width: 100%;
+  text-align: center;
+  font-size: 48px;
+  font-weight: bold;
+  color: #c41e3a;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.12);
+  letter-spacing: 4px;
+}
+
+#game_zone {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
   justify-content: center;
   align-items: flex-start;
+  padding: 20px;
+  flex-wrap: nowrap;
+  gap: 24px;
+}
+
+#moves_container {
+  width: 240px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+#selMoveList {
+  width: 100%;
+  font-family: '宋体', serif;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  height: 700px;
+  overflow-y: auto;
+  font-size: 18px;
+}
+
+#game_board {
+  margin: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 8px;
+  width: 730px;
+  height: 808px;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* Board container keeps the 521×577 legacy coordinate system; transform scales it up to fit 714×790 inside the card. */
+#container {
+  position: relative;
+  width: 521px;
+  height: 577px;
+  transform-origin: top left;
+  transform: scale(1.37);
+}
+
+#game_menu {
+  width: 240px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.toast-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 20px 40px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.toast-notification.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
 }
