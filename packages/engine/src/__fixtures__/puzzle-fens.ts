@@ -1,9 +1,13 @@
 /**
- * Mate-in-1 puzzle FENs ported verbatim from legacy/js/test.js.
- * Each FEN is a position where the side to move has a forced mate in one.
- * Used for perft/search regression tests to lock current engine behaviour.
+ * Tactical-position FENs ported verbatim from legacy/js/test.js (`puzzleList`).
+ *
+ * These are NOT mate-in-1 positions. The legacy test uses this list as a
+ * generic fixture for brute-force legal-move counting (perft-style), and
+ * we preserve that purpose. Task 21 (perft) is our engine-correctness gate;
+ * this fixture is available for future regression tests that need a
+ * diverse, complex set of mid/end-game positions.
  */
-export const MATE_IN_1_PUZZLES: readonly string[] = Object.freeze([
+export const PUZZLE_FENS: readonly string[] = Object.freeze([
   '9/2Cca4/3k1C3/4P1p2/4N1b2/4R1r2/4c1n2/3p1n3/2rNK4/9 w',
   '4C4/4a4/b2ank2b/9/9/1RNR1crC1/3r1p3/3cKA3/4A4/4n4 w',
   '9/4a4/3k1a3/2R3r2/1N5n1/C7c/1N5n1/2R3r2/3p1p3/4K4 w',
