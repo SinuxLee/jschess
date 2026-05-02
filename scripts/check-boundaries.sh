@@ -43,6 +43,10 @@ check "game imports svelte or app" \
   "packages/game/src" \
   "^(import|export).*from ['\"](svelte|@jschess/app|@preact/signals)"
 
+check "game imports @jschess/ai" \
+  "packages/game/src" \
+  "^(import|export).*from ['\"]@jschess/ai"
+
 check "game uses svelte runes" \
   "packages/game/src" \
   "\\\$state|\\\$derived|\\\$effect|\\\$props"
