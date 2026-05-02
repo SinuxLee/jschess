@@ -15,8 +15,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@jschess/engine": "workspace:*",
-    "@jschess/ai": "workspace:*"
+    "@jschess/engine": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^2.1.5",

@@ -9,7 +9,6 @@
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules", "**/*.test.ts"],
   "references": [
-    { "path": "../engine" },
-    { "path": "../ai" }
+    { "path": "../engine" }
   ]
 }

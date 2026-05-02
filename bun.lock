@@ -60,7 +60,6 @@
       "name": "@jschess/game",
       "version": "0.0.0",
       "dependencies": {
-        "@jschess/ai": "workspace:*",
         "@jschess/engine": "workspace:*",
       },
       "devDependencies": {
