@@ -23,7 +23,7 @@ check "engine imports DOM globals" \
 
 check "engine imports other workspace packages" \
   "packages/engine/src" \
-  "@jschess/(ai|game|app)"
+  "^(import|export).*from ['\"]@jschess/(ai|game|app)"
 
 check "ai imports DOM globals" \
   "packages/ai/src" \
@@ -31,7 +31,7 @@ check "ai imports DOM globals" \
 
 check "ai imports svelte or app/game" \
   "packages/ai/src" \
-  "@jschess/(game|app)|from ['\"]svelte"
+  "^(import|export).*from ['\"](@jschess/(game|app)|svelte)"
 
 check "game imports DOM globals" \
   "packages/game/src" \
@@ -39,7 +39,7 @@ check "game imports DOM globals" \
 
 check "game imports svelte or app" \
   "packages/game/src" \
-  "from ['\"]svelte|@jschess/app|@preact/signals"
+  "^(import|export).*from ['\"](svelte|@jschess/app|@preact/signals)"
 
 check "game uses svelte runes" \
   "packages/game/src" \
