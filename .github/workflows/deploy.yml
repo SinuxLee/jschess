@@ -1,0 +1,57 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build & Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check package boundaries
+        run: ./scripts/check-boundaries.sh
+
+      - name: Typecheck all packages
+        run: bun run typecheck
+
+      - name: Run all tests (incl. book parity)
+        run: bun run test
+
+      - name: Build the app
+        run: bun run --filter @jschess/app build
+
+      - name: Upload artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/app/dist
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

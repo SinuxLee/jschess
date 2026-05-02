@@ -8,7 +8,7 @@
     "tools/*"
   ],
   "scripts": {
-    "typecheck": "tsc --build --verbose",
+    "typecheck": "bun run --filter '*' typecheck",
     "test": "bun run --filter '*' test",
     "lint": "eslint \"packages/*/src/**/*.{ts,svelte}\" \"tools/*/src/**/*.ts\"",
     "format": "prettier --write \"**/*.{ts,svelte,json,md}\"",
