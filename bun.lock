@@ -85,6 +85,18 @@
         "vitest": "^2.1.9",
       },
     },
+    "tools/headless-battle": {
+      "name": "@jschess/tool-headless-battle",
+      "version": "0.0.0",
+      "dependencies": {
+        "@jschess/ai": "workspace:*",
+        "@jschess/engine": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.5.4",
+        "vitest": "^2.1.9",
+      },
+    },
   },
   "packages": {
     "@asamuzakjp/css-color": ["@asamuzakjp/css-color@5.1.11", "https://registry.npmmirror.com/@asamuzakjp/css-color/-/css-color-5.1.11.tgz", { "dependencies": { "@asamuzakjp/generational-cache": "^1.0.1", "@csstools/css-calc": "^3.2.0", "@csstools/css-color-parser": "^4.1.0", "@csstools/css-parser-algorithms": "^4.0.0", "@csstools/css-tokenizer": "^4.0.0" } }, "sha512-KVw6qIiCTUQhByfTd78h2yD1/00waTmm9uy/R7Ck/ctUyAPj+AEDLkQIdJW0T8+qGgj3j5bpNKK7Q3G+LedJWg=="],
@@ -212,6 +224,8 @@
     "@jschess/tool-book-extractor": ["@jschess/tool-book-extractor@workspace:tools/book-extractor"],
 
     "@jschess/tool-book-parity-test": ["@jschess/tool-book-parity-test@workspace:tools/book-parity-test"],
+
+    "@jschess/tool-headless-battle": ["@jschess/tool-headless-battle@workspace:tools/headless-battle"],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.60.2", "https://registry.npmmirror.com/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.60.2.tgz", { "os": "android", "cpu": "arm" }, "sha512-dnlp69efPPg6Uaw2dVqzWRfAWRnYVb1XJ8CyyhIbZeaq4CA5/mLeZ1IEt9QqQxmbdvagjLIm2ZL8BxXv5lH4Yw=="],
 

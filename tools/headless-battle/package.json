@@ -1,0 +1,19 @@
+{
+  "name": "@jschess/tool-headless-battle",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "play": "bun run src/battle.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@jschess/ai": "workspace:*",
+    "@jschess/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.9"
+  }
+}
