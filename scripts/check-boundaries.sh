@@ -51,9 +51,18 @@ check "game uses svelte runes" \
   "packages/game/src" \
   "\\\$state|\\\$derived|\\\$effect|\\\$props"
 
-check "svelte components import engine/ai directly" \
-  "packages/app/src" \
-  "^(import|export).*from ['\"]@jschess/(engine|ai)['\"]"
+# app may import @jschess/engine and @jschess/game directly.
+# @jschess/ai is the Search engine — app may only import it inside the
+# Web Worker entry under packages/app/src/workers/. Anywhere else would
+# pull the ~200KB search engine into the main bundle, defeating the worker.
+if grep -rnE "^(import|export).*from ['\"]@jschess/ai" \
+    packages/app/src \
+    --include='*.ts' --include='*.svelte' \
+    --exclude='*.test.ts' 2>/dev/null \
+    | grep -v '^packages/app/src/workers/'; then
+  echo "❌ Boundary violation: app imports @jschess/ai outside packages/app/src/workers/"
+  fail=1
+fi
 
 if [ $fail -ne 0 ]; then
   echo ""
