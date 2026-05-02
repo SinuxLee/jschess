@@ -1,0 +1,18 @@
+body {
+  font-family: 'Microsoft Yahei', sans-serif;
+  background: #e8d8a8;
+  margin: 0;
+  padding: 16px;
+}
+#game_title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+#game_zone {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: flex-start;
+}
