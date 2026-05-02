@@ -12,6 +12,7 @@
  *   ANIMATING → IDLE      (animation finished; human turn)
  *   ANIMATING → THINKING  (animation finished; AI's turn)
  *   THINKING  → ANIMATING (AI chose a move)
+ *   THINKING  → IDLE      (AI request failed / returned illegal move — rollback)
  */
 export const GamePhase = Object.freeze({
   IDLE: 'IDLE',
@@ -33,6 +34,7 @@ const LEGAL_TRANSITIONS: ReadonlySet<string> = new Set([
   `${GamePhase.ANIMATING}->${GamePhase.IDLE}`,
   `${GamePhase.ANIMATING}->${GamePhase.THINKING}`,
   `${GamePhase.THINKING}->${GamePhase.ANIMATING}`,
+  `${GamePhase.THINKING}->${GamePhase.IDLE}`,
 ]);
 
 export function canTransition(from: GamePhase, to: GamePhase): boolean {

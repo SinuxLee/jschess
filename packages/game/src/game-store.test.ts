@@ -91,4 +91,30 @@ describe('GameStore', () => {
     await store.applyHumanMove(makeMove(makeCoord(3, 9), makeCoord(3, 8)));
     expect(store.state.sideToMove).toBe('BLACK');
   });
+
+  it('requestAiMove: transport error rolls back to IDLE and rethrows', async () => {
+    class ErrorTransport implements AITransport {
+      private _handler: ((r: AIResponse) => void) | null = null;
+      send(req: AIRequest): void {
+        queueMicrotask(() => this._handler?.({ id: req.id, error: 'worker crashed' }));
+      }
+      onMessage(h: (r: AIResponse) => void): () => void {
+        this._handler = h;
+        return () => { this._handler = null; };
+      }
+      close(): void { this._handler = null; }
+    }
+    const store = new GameStore({ ai: new AIWorkerClient(new ErrorTransport()) });
+    await expect(store.requestAiMove(100)).rejects.toMatchObject({ kind: 'WorkerCrashed' });
+    expect(store.state.phase).toBe(GamePhase.IDLE);
+  });
+
+  it('requestAiMove: AI returns mv=0 resolves, emits illegalAttempt, phase returns to IDLE', async () => {
+    const store = new GameStore({ ai: new AIWorkerClient(new AlwaysMv(0)) });
+    const types: string[] = [];
+    store.subscribe((e) => types.push(e.type));
+    await store.requestAiMove(100);
+    expect(types).toContain('illegalAttempt');
+    expect(store.state.phase).toBe(GamePhase.IDLE);
+  });
 });

@@ -14,9 +14,9 @@ describe('GameState', () => {
     expect(canTransition(GamePhase.ANIMATING, GamePhase.ANIMATING)).toBe(false);
   });
 
-  it('THINKING can transition to ANIMATING only', () => {
+  it('THINKING can transition to ANIMATING (AI chose) or IDLE (AI error rollback)', () => {
     expect(canTransition(GamePhase.THINKING, GamePhase.ANIMATING)).toBe(true);
-    expect(canTransition(GamePhase.THINKING, GamePhase.IDLE)).toBe(false);
+    expect(canTransition(GamePhase.THINKING, GamePhase.IDLE)).toBe(true);
     expect(canTransition(GamePhase.THINKING, GamePhase.THINKING)).toBe(false);
   });
 });
