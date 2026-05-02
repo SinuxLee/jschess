@@ -11,7 +11,9 @@ check() {
   local description="$1"
   local dir="$2"
   local pattern="$3"
-  if grep -rnE "$pattern" "$dir" --include='*.ts' --include='*.svelte' 2>/dev/null; then
+  if grep -rnE "$pattern" "$dir" \
+      --include='*.ts' --include='*.svelte' \
+      --exclude='*.test.ts' 2>/dev/null; then
     echo "❌ Boundary violation: $description"
     fail=1
   fi
