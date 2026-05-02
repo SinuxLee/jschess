@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "typecheck": "tsc --build --verbose",
-    "test": "vitest run --workspace vitest.workspace.ts",
+    "test": "bun run --filter '*' test",
     "lint": "eslint \"packages/*/src/**/*.{ts,svelte}\" \"tools/*/src/**/*.ts\"",
     "format": "prettier --write \"**/*.{ts,svelte,json,md}\"",
     "build": "bun run --filter @jschess/app build",
