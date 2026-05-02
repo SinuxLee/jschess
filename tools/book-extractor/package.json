@@ -1,0 +1,13 @@
+{
+  "name": "@jschess/tool-book-extractor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "extract": "bun run src/extract.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
