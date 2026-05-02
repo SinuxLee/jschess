@@ -5,3 +5,4 @@
 export * from './primitives';
 export * from './rules';
 export * from './events';
+export * from './__fixtures__/puzzle-fens';
