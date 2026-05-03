@@ -116,7 +116,7 @@ input[type='checkbox'] {
   max-width: 1360px;
   margin: 0 auto;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   padding: 20px;
   flex-wrap: nowrap;
