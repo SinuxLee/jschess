@@ -57,18 +57,20 @@
   }
 </script>
 
-<div id="game_title">中国象棋</div>
-<div id="game_zone">
-  {#if store}
-    <MoveList {store} />
-    <div id="game_board">
-      <div id="container">
-        <Board {store} />
+<div id="game_root">
+  <div id="game_title">中国象棋</div>
+  <div id="game_zone">
+    {#if store}
+      <MoveList {store} />
+      <div id="game_board">
+        <div id="container">
+          <Board {store} />
+        </div>
       </div>
-    </div>
-    <Controls {store} {onRestart} {onToggleSound} />
-    <Toast {store} />
-  {:else}
-    <div>Loading…</div>
-  {/if}
+      <Controls {store} {onRestart} {onToggleSound} />
+      <Toast {store} />
+    {:else}
+      <div>Loading…</div>
+    {/if}
+  </div>
 </div>
