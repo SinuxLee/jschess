@@ -16,6 +16,8 @@ body {
   margin: 0 auto;
   font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
   color: #333;
+  /* Narrow viewports (<1298px) would otherwise clip the center board card silently; allow horizontal scroll instead. */
+  overflow-x: auto;
 }
 
 div.label {
@@ -150,6 +152,7 @@ input[type='checkbox'] {
   height: 808px;
   background: #fff;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 /* Board container keeps the 521×577 legacy coordinate system; transform scales it up to fit 714×790 inside the card. */
